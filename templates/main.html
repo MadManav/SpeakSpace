@@ -1,21 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
-    {% load static %}
+<html lang="en" class="h-full">
+    {% load static %}  
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SpeakSpace</title>
+    <title>SpeakSpace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/landingstyles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/analytics.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        dark: '#1F2937',
+                        darkgray: '#1F2937',
+                        darktext: '#FFFFFF',
+                        lighttext: '#F9FAFB',
+                        secondarydark: '#4B5563',
+                        secondarylight: '#FFFFFF',
+                        lightbg: '#F9FAFB',
+                        secondarybg: '#FFFFFF',
+                        tertiarybg: '#F3F4F6',
+                        darkbg: '#111827',
+                        secondarydarkbg: '#1F2937',
+                        tertiarydarkbg: '#374151',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        error: '#EF4444',
+                        info: '#3B82F6',
+                        lightborder: '#E5E7EB',
+                        darkborder: '#4B5563'
+                    },        
+                },
+            },
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="h-full bg-gray-50 dark:bg-gray-900 dark:text-white">
     {% block content %}
     {% endblock %}
 </body>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        darkMode: 'class'
-    }
-</script>
-<script src="{% static 'js/login.js' %}"></script>
+{% block scripts %}
+{% endblock %}
 </html>

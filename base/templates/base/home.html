@@ -1,0 +1,174 @@
+{% extends 'main.html' %}
+{% load static %} 
+{% block content %}
+<!-- Loader -->
+<div class="loader-container" id="loader">
+    <span class="loader"></span>
+</div>
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
+        <!-- User Profile Section -->
+        <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
+            <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
+                <!-- User Photo (displays uploaded photo or default) -->
+                <img id="userPhoto" src="{% static 'images/default-avatar.png' %}" alt="User Profile" class="w-full h-full object-cover">
+                
+                <!-- Upload overlay that appears on hover -->
+                <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-sm">Change Photo</span>
+                </div>
+                
+                <!-- Hidden file input -->
+                <input type="file" id="photoUpload" accept="image/*" class="hidden">
+            </div>
+            <h3 id="username" class="text-lg font-semibold">{{ user.username }}</h3>
+            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ user.role|title }}</p>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="p-4 space-y-4">
+            <a href="{% url 'analytics' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    My Progress
+                </div>
+            </a>
+            <a href="{% static %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Apply for Session
+                </div>
+            </a>
+            <a href="{% url 'logout' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </div>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
+            <h1 class="text-xl font-semibold">Home Page</h1>
+            
+            <!-- Dark mode toggle button -->
+            <button onclick="document.documentElement.classList.toggle('dark')" 
+                    class="p-2 rounded-full bg-tertiarybg dark:bg-tertiarydarkbg text-secondarydark dark:text-secondarylight transition-all hover:scale-110">
+                <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="flex-1 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Sessions Card -->
+            <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
+                <h2 class="text-lg font-semibold mb-4">Sessions</h2>
+                <!-- Sessions List -->
+                <div class="space-y-4">
+                    {% for session in active_sessions %}
+                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-semibold">{{ session.topic.title }}</h3>
+                                <p class="text-sm text-secondarydark dark:text-secondarylight mt-1">
+                                    Created by: {{ session.created_by.username }}
+                                </p>
+                                <p class="text-sm text-secondarydark dark:text-secondarylight mt-1">
+                                    {{ session.start_time|date:"F j, Y, g:i a" }}
+                                </p>
+                            </div>
+                            <a href="{% url 'join-session' session.id %}" class="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                                Join
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-secondarydark dark:text-secondarylight">No active sessions available</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Chat Room Card -->
+            <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder hover:shadow-lg transition-shadow">
+                <h2 class="text-lg font-semibold mb-4">Chat Room</h2>
+                <p class="text-secondarydark dark:text-secondarylight">Join discussions and practice your communication skills</p>
+                <a href="#" class="mt-4 bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors inline-block">
+                    Enter Chat Room
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Check for user's preferred color scheme
+    if (localStorage.getItem('darkMode') === 'true' || 
+        (!localStorage.getItem('darkMode') && 
+         window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+
+    // Save user preference when toggling dark mode
+    document.querySelector('[onclick="document.documentElement.classList.toggle(\'dark\')"]')
+        .addEventListener('click', function() {
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        });
+    
+    // User profile photo upload functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const loader = document.getElementById('loader');
+        setTimeout(() => {
+            loader.classList.add('loader-hidden');
+        }, 800);
+        
+        const photoContainer = document.querySelector('.w-24.h-24.rounded-full');
+        const fileInput = document.getElementById('photoUpload');
+        const userPhotoImg = document.getElementById('userPhoto');
+        
+        photoContainer.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    userPhotoImg.src = e.target.result;
+                    localStorage.setItem('userProfilePhoto', e.target.result);
+                };
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        const savedPhoto = localStorage.getItem('userProfilePhoto');
+        if (savedPhoto) {
+            userPhotoImg.src = savedPhoto;
+        }
+    });
+    
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loader');
+        loader.classList.add('loader-hidden');
+    });
+</script>
+{% endblock %}

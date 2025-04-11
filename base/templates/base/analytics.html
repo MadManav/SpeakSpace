@@ -1,0 +1,257 @@
+{% extends 'main.html' %}
+{% load static %} 
+{% block content %}
+<!-- Loader -->
+<div class="loader-container" id="loader">
+    <span class="loader"></span>
+</div>
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
+        <!-- User Profile Section -->
+        <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
+            <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
+                <!-- User Photo (displays uploaded photo or default) -->
+                <img id="userPhoto" src="../assets/default-avatar.png" alt="User Profile" class="w-full h-full object-cover">
+                
+                <!-- Upload overlay that appears on hover -->
+                <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-sm">Change Photo</span>
+                </div>
+                
+                <!-- Hidden file input -->
+                <input type="file" id="photoUpload" accept="image/*" class="hidden">
+            </div>
+            <h3 id="username" class="text-lg font-semibold">Username</h3>
+            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">Participant</p>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="p-4 space-y-4">
+            <a href="{% static 'analytics' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    My Progress
+                </div>
+            </a>
+            <a href="#" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Apply for Session
+                </div>
+            </a>
+            <a href="../signIn.html" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </div>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
+            <h1 class="text-xl font-semibold">My Progress</h1>
+            
+            <!-- Dark mode toggle button -->
+            <button onclick="document.documentElement.classList.toggle('dark')" 
+                    class="p-2 rounded-full bg-tertiarybg dark:bg-tertiarydarkbg text-secondarydark dark:text-secondarylight transition-all hover:scale-110">
+                <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Progress Content -->
+        <div class="flex-1 p-6 overflow-y-auto">
+            <!-- Term Selection Buttons -->
+            <div class="flex gap-4 mb-6">
+                <button id="t1Button" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                    T1
+                </button>
+                <button id="t2Button" class="px-6 py-2 bg-secondarybg dark:bg-secondarydarkbg text-darktext dark:text-lighttext border border-lightborder dark:border-darkborder rounded-lg hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                    T2
+                </button>
+                <button id="t3Button" class="px-6 py-2 bg-secondarybg dark:bg-secondarydarkbg text-darktext dark:text-lighttext border border-lightborder dark:border-darkborder rounded-lg hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                    T3
+                </button>
+            </div>
+
+            <!-- Performance Dashboard -->
+            <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
+                <h2 class="text-xl font-semibold mb-6">T1 Performance</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column - Stats -->
+                    <div class="space-y-6">
+                        <!-- Sessions Attended -->
+                        <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
+                            <h3 class="font-medium mb-2">Sessions Attended</h3>
+                            <p class="text-2xl font-semibold text-primary">12</p>
+                        </div>
+
+                        <!-- Average Rating -->
+                        <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
+                            <h3 class="font-medium mb-2">Average Rating</h3>
+                            <p class="text-2xl font-semibold text-primary">4.5/5</p>
+                        </div>
+
+                        <!-- Feedback -->
+                        <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
+                            <h3 class="font-medium mb-2">Feedback</h3>
+                            <div class="space-y-2">
+                                <p class="text-sm text-secondarydark dark:text-secondarylight">
+                                    "Excellent progress in communication skills"
+                                </p>
+                                <p class="text-sm text-secondarydark dark:text-secondarylight">
+                                    "Shows great improvement in problem-solving"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Graph -->
+                    <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg flex items-center justify-center">
+                        <div class="w-full h-64">
+                            <!-- Placeholder for graph - You can add your preferred charting library here -->
+                            <div class="w-full h-full flex items-center justify-center text-secondarydark dark:text-secondarylight">
+                                Performance Graph
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this script at the end of your body tag -->
+        <script>
+            // Term button functionality
+            const termButtons = {
+                t1: document.getElementById('t1Button'),
+                t2: document.getElementById('t2Button'),
+                t3: document.getElementById('t3Button')
+            };
+
+            function setActiveTerm(activeTerm) {
+                // Reset all buttons
+                Object.values(termButtons).forEach(button => {
+                    button.classList.remove('bg-primary', 'text-white');
+                    button.classList.add('bg-secondarybg', 'dark:bg-secondarydarkbg', 'text-darktext', 'dark:text-lighttext');
+                });
+
+                // Set active button
+                termButtons[activeTerm].classList.remove('bg-secondarybg', 'dark:bg-secondarydarkbg', 'text-darktext', 'dark:text-lighttext');
+                termButtons[activeTerm].classList.add('bg-primary', 'text-white');
+            }
+
+            // Add click event listeners
+            Object.entries(termButtons).forEach(([term, button]) => {
+                button.addEventListener('click', () => {
+                    setActiveTerm(term);
+                    // Here you can add logic to load specific term data
+                });
+            });
+        </script>
+    </div>
+</div>
+
+<script>
+    // Check for user's preferred color scheme
+    if (localStorage.getItem('darkMode') === 'true' || 
+        (!localStorage.getItem('darkMode') && 
+         window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+
+    // Save user preference when toggling dark mode
+    document.querySelector('[onclick="document.documentElement.classList.toggle(\'dark\')"]')
+        .addEventListener('click', function() {
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        });
+    
+    // User profile photo upload functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hide loader when page is fully loaded
+        const loader = document.getElementById('loader');
+        setTimeout(() => {
+            loader.classList.add('loader-hidden');
+        }, 800); // Hide after 800ms for better user experience
+        
+        const photoContainer = document.querySelector('.w-24.h-24.rounded-full');
+        const fileInput = document.getElementById('photoUpload');
+        const userPhotoImg = document.getElementById('userPhoto');
+        const usernameElement = document.getElementById('username');
+        const userRoleElement = document.getElementById('userRole');
+        
+        // Click on photo container triggers file input
+        photoContainer.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    userPhotoImg.src = e.target.result;
+                    // Save to localStorage for persistence
+                    localStorage.setItem('userProfilePhoto', e.target.result);
+                };
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Load user details from localStorage (would come from server in real app)
+        function loadUserDetails() {
+            // Check if user is logged in
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            
+            if (isLoggedIn) {
+                // Load saved photo if exists
+                const savedPhoto = localStorage.getItem('userProfilePhoto');
+                if (savedPhoto) {
+                    userPhotoImg.src = savedPhoto;
+                }
+                
+                // Load user details
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                if (userData.username) {
+                    usernameElement.textContent = userData.username;
+                }
+                if (userData.role) {
+                    userRoleElement.textContent = userData.role;
+                }
+            } else {
+                // Redirect to login if not logged in
+                // window.location.href = '../signIn.html';
+                // Commented out for development purposes
+            }
+        }
+        
+        // Load user details on page load
+        loadUserDetails();
+    });
+    
+    // Add event listener for when all resources are loaded
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loader');
+        loader.classList.add('loader-hidden');
+    });
+</script>
+{% endblock %}
