@@ -1,47 +1,36 @@
-{% extends 'main.html' %}
-{% load static %} 
-{% block content %}
-<!-- Loader -->
-<div class="loader-container" id="loader">
-    <span class="loader"></span>
-</div>
+{% extends "main.html" %}
+{% load static %}
+{% block styles %}
 
-<div class="flex h-screen">
+{% endblock %}
+{% block content %}
+<div class="flex h-screen font-[Poppins] text-darktext dark:text-lighttext transition-colors duration-300">
     <!-- Sidebar -->
     <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
         <!-- User Profile Section -->
         <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
             <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
-                <!-- User Photo (displays uploaded photo or default) -->
-                <img id="userPhoto" src="../assets/default-avatar.png" alt="User Profile" class="w-full h-full object-cover">
-                
-                <!-- Upload overlay that appears on hover -->
+                <img id="userPhoto" src="{% static 'assets/default-avatar.png' %}" alt="User Profile" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <span class="text-white text-sm">Change Photo</span>
                 </div>
-                
-                <!-- Hidden file input -->
                 <input type="file" id="photoUpload" accept="image/*" class="hidden">
             </div>
-            <h3 id="username" class="text-lg font-semibold">Username</h3>
-            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">Participant</p>
+            <h3 id="username" class="text-lg font-semibold">{{ user.username }}</h3>
+            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ user.role }}</p>
         </div>
 
         <!-- Sidebar Navigation -->
         <nav class="p-4 space-y-4">
-            <a href="ParticipantDashboard.html" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+            <a href="{% url 'analytics' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
+                    <i class="fas fa-chart-line mr-3"></i>
                     My Progress
                 </div>
             </a>
-            <a href="../signIn.html" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
+            <a href="{% url 'logout' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
+                    <i class="fas fa-sign-out-alt mr-3"></i>
                     Logout
                 </div>
             </a>
@@ -53,72 +42,52 @@
         <!-- Header -->
         <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
             <h1 class="text-xl font-semibold">Apply for Session</h1>
-            
-            <!-- Dark mode toggle button -->
             <button onclick="document.documentElement.classList.toggle('dark')" 
                     class="p-2 rounded-full bg-tertiarybg dark:bg-tertiarydarkbg text-secondarydark dark:text-secondarylight transition-all hover:scale-110">
-                <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block"></i>
             </button>
         </header>
 
         <!-- Application Content -->
-        <div class="flex-1 p-6 overflow-y-auto">
-            <!-- Term Information Cards -->
-            <div class="space-y-6">
-                <!-- T1 Info Card -->
-                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h2 class="text-lg font-semibold mb-2">T1: Details</h2>
-                            <p class="text-secondarydark dark:text-secondarylight mb-4">Information about T1 sessions will be displayed here.</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <input type="date" class="px-4 py-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg text-darktext dark:text-lighttext focus:outline-none focus:border-primary">
-                            <button class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- T2 Info Card -->
-                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h2 class="text-lg font-semibold mb-2">T2: Details</h2>
-                            <p class="text-secondarydark dark:text-secondarylight mb-4">Information about T2 sessions will be displayed here.</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <input type="date" class="px-4 py-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg text-darktext dark:text-lighttext focus:outline-none focus:border-primary">
-                            <button class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- T3 Info Card -->
-                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h2 class="text-lg font-semibold mb-2">T3: Details</h2>
-                            <p class="text-secondarydark dark:text-secondarylight mb-4">Information about T3 sessions will be displayed here.</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <input type="date" class="px-4 py-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg text-darktext dark:text-lighttext focus:outline-none focus:border-primary">
-                            <button class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <!-- ... existing code ... -->
+<div class="flex-1 p-6 overflow-y-auto space-y-6">
+    {% for topic in topics %}
+    <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-lg font-semibold mb-2">{{ topic.title }}</h2>
+                <p class="text-secondarydark dark:text-secondarylight mb-4">{{ topic.description }}</p>
+            </div>
+            <div class="flex items-center gap-4">
+                {% if topic.interview_status %}
+                    <span class="px-4 py-2 rounded-lg 
+                        {% if topic.interview_status == 'pending' %}bg-warning/20 text-warning
+                        {% elif topic.interview_status == 'approved' %}bg-success/20 text-success
+                        {% else %}bg-error/20 text-error{% endif %}">
+                        {{ topic.interview_status|title }}
+                    </span>
+                {% else %}
+                    <form method="POST" class="flex items-center gap-4" action="{% url 'apply-sessions' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="topic_id" value="{{ topic.id }}">
+                        <input type="datetime-local" name="preferred_date" required 
+                               class="px-4 py-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg text-darktext dark:text-lighttext focus:outline-none focus:border-primary">
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                            Apply
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>
+    {% endfor %}
 </div>
+<!-- ... existing code ... -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Add JS if needed -->
 {% endblock %}

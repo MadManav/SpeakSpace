@@ -1,5 +1,8 @@
 {% extends 'main.html' %}
 {% load static %} 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/analytics.css' %}">
+{% endblock %}
 {% block content %}
 <!-- Loader -->
 <div class="loader-container" id="loader">

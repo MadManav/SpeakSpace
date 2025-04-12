@@ -1,0 +1,120 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block title %}Available Timing - SpeakSpace{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/available-timing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
+        <!-- User Profile Section -->
+        <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
+            <div class="profile-container">
+                <img id="userPhoto" src="{% static 'assets/default-avatar.png' %}" alt="User Profile" class="profile-photo">
+                <div class="photo-overlay">
+                    <span class="text-white text-sm">Change Photo</span>
+                </div>
+                <input type="file" id="photoUpload" accept="image/*" class="hidden">
+            </div>
+            <h3 id="username" class="text-lg font-semibold mt-3">Evaluator Name</h3>
+            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">Evaluator</p>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="p-4 space-y-4">
+            <a href="{% url 'evaluation-dashboard' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'application' %}" class="nav-link">Applications</a>
+            <a href="{% url 'history' %}" class="nav-link">History</a>
+            <a href="{% url 'available-timings' %}" class="nav-link bg-tertiarybg dark:bg-tertiarydarkbg">Available Timing</a>
+            <a href="{% url 'logout' %}" class="nav-link mt-8 text-error">Logout</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
+            <h1 class="text-xl font-semibold">Available Timing</h1>
+            <!-- Dark Mode Toggle -->
+            <button onclick="document.documentElement.classList.toggle('dark')" class="p-2 rounded-full bg-tertiarybg dark:bg-tertiarydarkbg text-secondarydark dark:text-secondarylight transition-all hover:scale-110">
+                <!-- Icon Switch -->
+                <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1..."/>
+                </svg>
+                <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9..."/>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Available Timing Form & Schedule -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Set Available Time -->
+                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
+                    <h2 class="text-lg font-semibold mb-4">Set Available Time</h2>
+                    <form class="space-y-4">
+                        <!-- Topic -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Topic</label>
+                            <select class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
+                                <option value="">Select a topic</option>
+                                <option value="public-speaking">Public Speaking</option>
+                                <option value="interview">Interview Preparation</option>
+                                <option value="presentation">Presentation Skills</option>
+                                <option value="debate">Debate Skills</option>
+                                <option value="communication">Communication Skills</option>
+                            </select>
+                        </div>
+                        <!-- Date & Time -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Date</label>
+                            <input type="date" class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Start Time</label>
+                                <input type="time" class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">End Time</label>
+                                <input type="time" class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-colors">
+                            Add Time Slot
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Current Schedule -->
+                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
+                    <h2 class="text-lg font-semibold mb-4">Current Schedule</h2>
+                    <div class="space-y-4">
+                        <!-- Example Schedule Items -->
+                        <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg flex justify-between items-center">
+                            <div>
+                                <p class="font-medium">Monday, Jan 22, 2024</p>
+                                <p class="text-sm text-secondarydark dark:text-secondarylight">10:00 AM - 12:00 PM</p>
+                            </div>
+                            <button class="text-error hover:text-opacity-80">
+                                <!-- Trash icon -->
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="..."/>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- More items... -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/available-timing.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,642 @@
+{% extends 'main.html' %}
+{% load static %} 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/moderator.css' %}">
+{% endblock %}
+{% block content %}
+<!-- Preloader -->
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<div class="flex h-screen">
+    <!-- Sidebar / Navbar -->
+    <div class="sidebar bg-white dark:bg-gray-800 w-64 shadow-md flex flex-col transition-colors duration-200">
+        <!-- Profile Section -->
+        <div class="flex flex-col items-center justify-center p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="profile-container relative">
+                <div class="h-24 w-24 rounded-full overflow-hidden mb-4 border-2 border-primary">
+                    <img id="profile-image" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile" class="h-full w-full object-cover">
+                    <div class="profile-upload-overlay">
+                        <label for="profile-upload" class="cursor-pointer">
+                            <i class="fas fa-camera mr-1"></i> Edit
+                        </label>
+                        <input type="file" id="profile-upload" class="hidden" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Moderator Name</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Moderator</p>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="flex-1 overflow-y-auto py-4 px-3">
+            <ul class="space-y-3">
+                <li>
+                    <button id="create-session-btn" class="w-full flex items-center p-3 text-base font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200">
+                        <div class="w-6 h-6 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <span class="ml-3">Create Session</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="logout-btn" class="w-full flex items-center p-3 text-base font-medium text-red-400 rounded-lg border border-gray-600 hover:bg-gray-700 transition-all duration-200">
+                        <div class="w-6 h-6 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                <path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <span class="ml-3">Logout</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="flex-1 overflow-y-auto">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center transition-colors duration-200">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Home Page</h1>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Dark mode toggle button -->
+                <button id="darkModeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all hover:scale-110 focus:outline-none">
+                    <!-- Sun icon (visible in dark mode) -->
+                    <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <!-- Moon icon (visible in light mode) -->
+                    <svg class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Dashboard Content -->
+        <main class="p-6" id="main-content">
+            <!-- Home Page Content -->
+            <div id="home-content">
+                <!-- Sessions Section -->
+                <section>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Sessions Ongoing</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Session Card 1 -->
+                        <div class="session-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700">
+                            <div class="bg-primary bg-opacity-10 dark:bg-opacity-20 p-3 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Technical Interview Preparation</h3>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300">45 minutes</p>
+                                </div>
+                                <div class="flex items-center mb-4">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300">4/6 Participants</p>
+                                </div>
+                                <button class="enter-btn w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    Enter Session
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Session Card 2 -->
+                        <div class="session-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700">
+                            <div class="bg-primary bg-opacity-10 dark:bg-opacity-20 p-3 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Group Discussion on AI Ethics</h3>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300">60 minutes</p>
+                                </div>
+                                <div class="flex items-center mb-4">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300">5/8 Participants</p>
+                                </div>
+                                <button class="enter-btn w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    Enter Session
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Session Card 3 -->
+                        <div class="session-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700">
+                            <div class="bg-primary bg-opacity-10 dark:bg-opacity-20 p-3 border-b border-gray-200 dark:border-gray-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mock HR Interview</h3>
+                            </div>
+                            <div class="p-5">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300">30 minutes</p>
+                                </div>
+                                <div class="flex items-center mb-4">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300">2/4 Participants</p>
+                                </div>
+                                <button class="enter-btn w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    Enter Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Recent Activity Section -->
+                <section class="mt-8">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Activity Log</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Last 7 days</span>
+                        </div>
+                        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <!-- Activity Item 1 -->
+                            <li class="p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0 mr-4">
+                                        <span class="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                                                Completed "Technical Interview" session
+                                            </h4>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                            10:30 AM
+                                        </p>
+                                        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                            Successful
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <!-- Activity Item 2 -->
+                            <li class="p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0 mr-4">
+                                        <span class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                                                Created new session "Group Discussion on AI Ethics"
+                                            </h4>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">Yesterday</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                            3:45 PM
+                                        </p>
+                                        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                            New Session
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <!-- Activity Item 3 -->
+                            <li class="p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0 mr-4">
+                                        <span class="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600 dark:text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">
+                                                5 new participants joined your session
+                                            </h4>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">2 days ago</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                            Group Discussion on AI Ethics
+                                        </p>
+                                        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+                                            Participants
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Apply for Session Page (initially hidden) -->
+            <div id="apply-session-content" class="hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Apply for Session</h2>
+                    <button id="back-to-home-btn" class="flex items-center text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Back to Home
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <section class="mt-8">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Interview Requests</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {% for request in interview_requests %}
+                            <div class="request-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700">
+                                <div class="bg-yellow-100 dark:bg-yellow-900 bg-opacity-50 p-3 border-b border-gray-200 dark:border-gray-700">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ request.topic.title }}</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Requested by: {{ request.participant.username }}</p>
+                                </div>
+                                <div class="p-5">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-gray-600 dark:text-gray-300">{{ request.preferred_date|date:"d/m/Y H:i" }}</p>
+                                    </div>
+                                    {% if request.notes %}
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mr-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 dark:text-purple-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H6z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-gray-600 dark:text-gray-300">{{ request.notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            class="create-session-btn flex-1 bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center"
+                                            data-request-id="{{ request.id }}"
+                                            data-participant="{{ request.participant.username }}"
+                                            data-topic="{{ request.topic.title }}"
+                                            data-date="{{ request.preferred_date|date:'Y-m-d' }}"
+                                            data-time="{{ request.preferred_date|date:'H:i' }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                            </svg>
+                                            Create Session
+                                        </button>
+                                        <button 
+                                            class="decline-btn flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-center flex items-center justify-center"
+                                            data-request-id="{{ request.id }}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                            Decline
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-span-full text-center py-8">
+                                <p class="text-gray-500 dark:text-gray-400">No pending interview requests</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Create Session Modal -->
+<div id="create-session-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transition-colors duration-200">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Create Session</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- User's Name -->
+                <div>
+                    <label for="user-name-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User's Name</label>
+                    <input type="text" id="user-name-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter user's name">
+                </div>
+                
+                <!-- Session Type/Topic -->
+                <div>
+                    <label for="modal-topic-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Topic</label>
+                    <input type="text" id="modal-topic-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter session topic">
+                </div>
+                
+                <!-- Date -->
+                <div>
+                    <label for="modal-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                    <input type="date" id="modal-date-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                
+                <!-- Time -->
+                <div>
+                    <label for="modal-time-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Starting Time</label>
+                    <input type="time" id="modal-time-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                
+                <!-- Duration -->
+                <div>
+                    <label for="modal-duration-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
+                    <input type="number" id="modal-duration-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" value="45" min="15" step="15">
+                </div>
+                
+                <!-- Evaluator Dropdown -->
+                <div>
+                    <label for="evaluator-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Evaluator</label>
+                    <select id="evaluator-select" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Select an evaluator</option>
+                        <option value="John Doe">John Doe</option>
+                        <option value="Jane Smith">Jane Smith</option>
+                        <option value="Robert Johnson">Robert Johnson</option>
+                        <option value="Emily Davis">Emily Davis</option>
+                        <option value="Michael Wilson">Michael Wilson</option>
+                    </select>
+                </div>
+                
+                <div class="pt-4">
+                    <button id="modal-create-btn" class="w-full bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                        Create Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script>
+    // Dark mode handling
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+    
+    // Preloader
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('preloader');
+        setTimeout(() => {
+            preloader.style.opacity = '0';
+            preloader.style.visibility = 'hidden';
+        }, 800);
+    });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const profileUpload = document.getElementById('profile-upload');
+        const profileImage = document.getElementById('profile-image');
+        const createSessionBtn = document.getElementById('create-session-btn');
+        const homeContent = document.getElementById('home-content');
+        const applySessionContent = document.getElementById('apply-session-content');
+        const headerTitle = document.querySelector('header h1');
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
+        const createSessionModal = document.getElementById('create-session-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const modalCreateBtn = document.getElementById('modal-create-btn');
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('click', function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Profile Image Upload
+        profileUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => profileImage.src = e.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Interview Request Handlers
+        document.querySelectorAll('.create-session-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const requestData = this.dataset;
+                createSessionModal.classList.remove('hidden');
+                
+                // Pre-fill modal with request data
+                document.getElementById('user-name-input').value = requestData.participant;
+                document.getElementById('modal-topic-input').value = requestData.topic;
+                document.getElementById('modal-date-input').value = requestData.date;
+                document.getElementById('modal-time-input').value = requestData.time;
+            });
+        });
+
+        document.querySelectorAll('.decline-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                if (confirm('Are you sure you want to decline this interview request?')) {
+                    const requestId = this.dataset.requestId;
+                    try {
+                        const response = await fetch(`/api/interview-requests/${requestId}/decline/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            }
+                        });
+
+                        if (response.ok) {
+                            const requestCard = this.closest('.request-card');
+                            requestCard.style.transition = 'opacity 0.5s ease';
+                            requestCard.style.opacity = '0';
+                            setTimeout(() => requestCard.remove(), 500);
+                        } else {
+                            alert('Failed to decline request. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                    }
+                }
+            });
+        });
+
+        // Session Management
+        createSessionBtn.addEventListener('click', function() {
+            homeContent.classList.add('hidden');
+            applySessionContent.classList.remove('hidden');
+            headerTitle.textContent = 'Apply for Session';
+        });
+
+        backToHomeBtn.addEventListener('click', showHomePage);
+        closeModalBtn.addEventListener('click', () => createSessionModal.classList.add('hidden'));
+
+        modalCreateBtn.addEventListener('click', function() {
+            const formData = {
+                userName: document.getElementById('user-name-input').value,
+                topic: document.getElementById('modal-topic-input').value,
+                date: document.getElementById('modal-date-input').value,
+                time: document.getElementById('modal-time-input').value,
+                duration: document.getElementById('modal-duration-input').value,
+                evaluator: document.getElementById('evaluator-select').value
+            };
+
+            if (validateFormData(formData)) {
+                createNewSession(formData);
+                createSessionModal.classList.add('hidden');
+                showHomePage();
+            }
+        });
+
+        // Helper Functions
+        function showHomePage() {
+            homeContent.classList.remove('hidden');
+            applySessionContent.classList.add('hidden');
+            headerTitle.textContent = 'Home Page';
+        }
+
+        function validateFormData(data) {
+            if (!data.userName) {
+                alert('Please enter user\'s name');
+                return false;
+            }
+            if (!data.topic) {
+                alert('Please enter a topic');
+                return false;
+            }
+            if (!data.date) {
+                alert('Please select a date');
+                return false;
+            }
+            if (!data.time) {
+                alert('Please select a starting time');
+                return false;
+            }
+            if (!data.duration || data.duration < 15) {
+                alert('Please enter a valid duration (minimum 15 minutes)');
+                return false;
+            }
+            if (!data.evaluator) {
+                alert('Please select an evaluator');
+                return false;
+            }
+            return true;
+        }
+
+        function createNewSession(data) {
+            const sessionsContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
+            const newCard = createSessionCard(data);
+            sessionsContainer.insertBefore(newCard, sessionsContainer.firstChild);
+            
+            // Add animation
+            newCard.style.opacity = '0';
+            requestAnimationFrame(() => {
+                newCard.style.transition = 'opacity 0.5s ease';
+                newCard.style.opacity = '1';
+            });
+        }
+
+        function createSessionCard(data) {
+            const card = document.createElement('div');
+            card.className = 'session-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700';
+            card.innerHTML = `
+                <div class="bg-primary bg-opacity-10 dark:bg-opacity-20 p-3 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${data.topic}</h3>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center mb-3">
+                        <div class="w-8 h-8 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">${data.duration} minutes</p>
+                    </div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">0/6 Participants</p>
+                    </div>
+                    <button class="enter-btn w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Enter Session
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

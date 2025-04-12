@@ -1,5 +1,8 @@
 {% extends 'main.html' %}
 {% load static %} 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
 {% block content %}
 <!-- Loader -->
 <div class="loader-container" id="loader">
@@ -11,18 +14,18 @@
     <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
         <!-- User Profile Section -->
         <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
-            <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
-                <!-- User Photo (displays uploaded photo or default) -->
-                <img id="userPhoto" src="{% static 'images/default-avatar.png' %}" alt="User Profile" class="w-full h-full object-cover">
-                
-                <!-- Upload overlay that appears on hover -->
-                <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span class="text-white text-sm">Change Photo</span>
+            <form id="profileImageForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
+                    <img id="userPhoto" src="{{ user.image.url }}" alt="User Profile" class="w-full h-full object-cover">
+                    
+                    <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="text-white text-sm">Change Photo</span>
+                    </div>
+                    
+                    <input type="file" id="photoUpload" name="image" accept="image/*" class="hidden">
                 </div>
-                
-                <!-- Hidden file input -->
-                <input type="file" id="photoUpload" accept="image/*" class="hidden">
-            </div>
+            </form>
             <h3 id="username" class="text-lg font-semibold">{{ user.username }}</h3>
             <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ user.role|title }}</p>
         </div>
@@ -37,7 +40,7 @@
                     My Progress
                 </div>
             </a>
-            <a href="{% static %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+            <a href="{% url 'apply-sessions' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -105,12 +108,30 @@
             </div>
 
             <!-- Chat Room Card -->
-            <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder hover:shadow-lg transition-shadow">
-                <h2 class="text-lg font-semibold mb-4">Chat Room</h2>
-                <p class="text-secondarydark dark:text-secondarylight">Join discussions and practice your communication skills</p>
-                <a href="#" class="mt-4 bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors inline-block">
-                    Enter Chat Room
-                </a>
+            <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
+                <h2 class="text-lg font-semibold mb-4">Chat Rooms</h2>
+                <p class="text-secondarydark dark:text-secondarylight mb-4">Join topic-specific discussions and practice your communication skills</p>
+                
+                <!-- Topics/Chat Rooms List -->
+                <div class="space-y-3">
+                    {% for topic in topics %}
+                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-semibold">{{ topic.title }}</h3>
+                                {% if topic.description %}
+                                <p class="text-sm text-secondarydark dark:text-secondarylight mt-1">{{ topic.description }}</p>
+                                {% endif %}
+                            </div>
+                            <a href="#" class="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                                Join Chat
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-secondarydark dark:text-secondarylight">No chat rooms available</p>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -135,35 +156,63 @@
     // User profile photo upload functionality
     document.addEventListener('DOMContentLoaded', function() {
         const loader = document.getElementById('loader');
-        setTimeout(() => {
-            loader.classList.add('loader-hidden');
-        }, 800);
-        
-        const photoContainer = document.querySelector('.w-24.h-24.rounded-full');
         const fileInput = document.getElementById('photoUpload');
         const userPhotoImg = document.getElementById('userPhoto');
+        const photoContainer = document.querySelector('.w-24.h-24.rounded-full');
         
+        // Handle click on photo container
         photoContainer.addEventListener('click', function() {
             fileInput.click();
         });
-        
+
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                const reader = new FileReader();
+                const file = this.files[0];
                 
-                reader.onload = function(e) {
-                    userPhotoImg.src = e.target.result;
-                    localStorage.setItem('userProfilePhoto', e.target.result);
-                };
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file');
+                    return;
+                }
                 
-                reader.readAsDataURL(this.files[0]);
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Image size should be less than 5MB');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('image', file);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                // Show loader
+                loader.classList.remove('loader-hidden');
+
+                fetch('{% url "update-user-image" %}', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update image with cache-busting parameter
+                        userPhotoImg.src = data.image_url + '?t=' + new Date().getTime();
+                    } else {
+                        alert(data.error || 'Failed to upload image. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while uploading the image.');
+                })
+                .finally(() => {
+                    loader.classList.add('loader-hidden');
+                    // Reset file input
+                    fileInput.value = '';
+                });
             }
         });
-        
-        const savedPhoto = localStorage.getItem('userProfilePhoto');
-        if (savedPhoto) {
-            userPhotoImg.src = savedPhoto;
-        }
     });
     
     window.addEventListener('load', function() {

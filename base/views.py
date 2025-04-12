@@ -2,18 +2,23 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import User, Session, Topic, SessionParticipant
+from .models import User, Session, Topic, SessionParticipant,InterviewRequest
 from django.utils import timezone
 from django.db.models import Avg
+from django.http import JsonResponse
 
 def loginPage(request):
     if request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
-        username = request.POST.get('username').lower()  # Convert to lowercase
+        username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
+        # Check for moderator credentials
+        if username == 'moderator' and password == 'moderator':
+            return redirect('moderator')
+            
         try:
             # Check if user exists
             user = User.objects.get(username=username)
@@ -77,7 +82,7 @@ def homePage(request):
     context = {
         'topics': topics,
         'active_sessions': active_sessions,
-        'user': request.user,  # Add user to context
+        'user': request.user,
     }
     return render(request, 'base/home.html', context)
 
@@ -102,3 +107,121 @@ def analyticsPage(request):
     }
     
     return render(request, 'base/analytics.html', context)
+
+
+@login_required(login_url='login')
+def applySession(request):
+    if request.method == 'POST':
+        topic_id = request.POST.get('topic_id')
+        preferred_date = request.POST.get('preferred_date')
+        
+        if topic_id and preferred_date:
+            InterviewRequest.objects.create(
+                participant=request.user,
+                topic_id=topic_id,
+                preferred_date=preferred_date,
+                status='pending'
+            )
+            return redirect('apply-session')
+    
+    # Get all topics and annotate with interview request status
+    topics = Topic.objects.all()
+    for topic in topics:
+        try:
+            interview_request = InterviewRequest.objects.filter(
+                participant=request.user,
+                topic=topic
+            ).latest('created_at')
+            topic.interview_status = interview_request.status
+        except InterviewRequest.DoesNotExist:
+            topic.interview_status = None
+    
+    context = {
+        'user': request.user,
+        'topics': topics
+    }
+    return render(request, 'base/apply_sessions.html', context)
+
+
+def moderator(request):
+    interview_requests = InterviewRequest.objects.filter(status='pending').select_related('participant', 'topic')
+    return render(request, 'base/moderator.html', {
+        'interview_requests': interview_requests
+    })
+
+@login_required(login_url='login')
+def update_user_image(request):
+    if request.method == 'POST' and request.FILES.get('image'):
+        try:
+            # Delete old image if it exists and is not the default avatar
+            if request.user.image and 'avatar.svg' not in request.user.image.path:
+                request.user.image.delete()
+            
+            request.user.image = request.FILES['image']
+            request.user.save()
+            
+            return JsonResponse({
+                'success': True,
+                'image_url': request.user.image.url
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    return JsonResponse({'success': False, 'error': 'No image provided'})
+
+def application_page(request):
+    return render(request, 'base/applications.html')
+
+def history_page(request):
+    return render(request, 'base/history.html')
+
+def evaluation_page(request):
+    return render(request, 'base/evaluation.html')
+
+def evaluation_dashboard(request):
+    return render(request, 'base/EvaluatorDashboard.html')
+
+def available_timings(request):
+    return render(request, 'base/available-timing.html')
+
+# @login_required
+# def create_session(request):
+#     if request.method == 'POST':
+#         form = SessionForm(request.POST)
+#         if form.is_valid():
+#             session = form.save(commit=False)
+#             session.created_by = request.user
+#             session.save()
+            
+#             # Generate meeting credentials
+#             credentials = session.generate_meeting_credentials()
+            
+#             # Add participants
+#             participants = form.cleaned_data['participants']
+#             for user in participants:
+#                 SessionParticipant.objects.create(session=session, user=user)
+            
+#             # Notify participants
+#             session.notify_participants()
+            
+#             return redirect('session_detail', pk=session.pk)
+#     else:
+#         form = SessionForm()
+    
+#     return render(request, 'create_session.html', {'form': form})
+
+# @login_required
+# def session_detail(request, pk):
+#     session = Session.objects.get(pk=pk)
+#     return render(request, 'session_detail.html', {'session': session})
+
+# @login_required
+# def participant_dashboard(request):
+#     participant_sessions = SessionParticipant.objects.filter(user=request.user)
+#     selector_sessions = Session.objects.filter(selector=request.user)
+#     return render(request, 'participant_dashboard.html', {
+#         'participant_sessions': participant_sessions,
+#         'selector_sessions': selector_sessions
+#     })

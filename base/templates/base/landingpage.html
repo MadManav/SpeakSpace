@@ -1,5 +1,8 @@
 {% extends 'main.html' %}
 {% load static %} 
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/landingstyles.css' %}"/>
+{% endblock %}
 {% block content %}
 <nav class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -228,6 +231,9 @@
                 e.preventDefault();
                 
                 const targetId = this.getAttribute('href');
+                // Check if targetId is just '#' and skip if it is
+                if (targetId === '#') return;
+                
                 const targetElement = document.querySelector(targetId);
                 
                 if (targetElement) {

@@ -1,0 +1,147 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block styles %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/evaluation.css' %}">
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        darkgray: '#1F2937',
+                        darktext: '#111827',
+                        lighttext: '#F9FAFB',
+                        secondarydark: '#4B5563',
+                        secondarylight: '#D1D5DB',
+                        lightbg: '#F9FAFB',
+                        secondarybg: '#FFFFFF',
+                        tertiarybg: '#F3F4F6',
+                        darkbg: '#111827',
+                        secondarydarkbg: '#1F2937',
+                        tertiarydarkbg: '#374151',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        error: '#EF4444',
+                        info: '#3B82F6'
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="font-[Poppins] bg-lightbg dark:bg-darkbg text-darktext dark:text-lighttext min-h-screen transition-colors duration-300">
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-semibold mb-6">Session Evaluation</h1>
+
+            <!-- Participant Info -->
+            <div class="mb-8 p-4 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-secondarydark dark:text-secondarylight">Participant Name</p>
+                        <p class="font-medium">John Doe</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondarydark dark:text-secondarylight">Topic</p>
+                        <p class="font-medium">Public Speaking</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondarydark dark:text-secondarylight">Date</p>
+                        <p class="font-medium">January 22, 2024</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondarydark dark:text-secondarylight">Duration</p>
+                        <p class="font-medium">60 minutes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation Form -->
+            <form class="space-y-6">
+                <div class="space-y-4">
+                    <!-- Content -->
+                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
+                        <label class="block font-medium mb-2">Content Quality</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="range" min="0" max="10" value="5"
+                                class="w-full h-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg appearance-none cursor-pointer">
+                            <span class="text-lg font-medium min-w-[2rem] text-center">5</span>
+                        </div>
+                    </div>
+
+                    <!-- Delivery -->
+                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
+                        <label class="block font-medium mb-2">Delivery & Presentation</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="range" min="0" max="10" value="5"
+                                class="w-full h-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg appearance-none cursor-pointer">
+                            <span class="text-lg font-medium min-w-[2rem] text-center">5</span>
+                        </div>
+                    </div>
+
+                    <!-- Communication -->
+                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
+                        <label class="block font-medium mb-2">Communication Skills</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="range" min="0" max="10" value="5"
+                                class="w-full h-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg appearance-none cursor-pointer">
+                            <span class="text-lg font-medium min-w-[2rem] text-center">5</span>
+                        </div>
+                    </div>
+
+                    <!-- Overall -->
+                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
+                        <label class="block font-medium mb-2">Overall Performance</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="range" min="0" max="10" value="5"
+                                class="w-full h-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg appearance-none cursor-pointer">
+                            <span class="text-lg font-medium min-w-[2rem] text-center">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback -->
+                <div class="space-y-2">
+                    <label class="block font-medium">Additional Feedback</label>
+                    <textarea rows="4"
+                        class="w-full p-3 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg"
+                        placeholder="Provide detailed feedback and suggestions for improvement..."></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end space-x-4">
+                    <button type="button"
+                        class="px-6 py-2 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors">
+                        Submit Evaluation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update rating display when slider changes
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+        slider.addEventListener('input', (e) => {
+            e.target.nextElementSibling.textContent = e.target.value;
+        });
+    });
+</script>
+{% endblock %}
