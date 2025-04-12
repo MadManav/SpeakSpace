@@ -123,9 +123,15 @@
                                 <p class="text-sm text-secondarydark dark:text-secondarylight mt-1">{{ topic.description }}</p>
                                 {% endif %}
                             </div>
-                            <a href="#" class="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-                                Join Chat
-                            </a>
+                            {% if topic.id in joined_topic_ids %}
+                                <a href="{% url 'chat_room' %}?topic={{ topic.id }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                                    Joined
+                                </a>
+                            {% else %}
+                                <a href="{% url 'chat_room' %}?topic={{ topic.id }}" class="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                                    Join Chat
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                     {% empty %}
@@ -219,5 +225,11 @@
         const loader = document.getElementById('loader');
         loader.classList.add('loader-hidden');
     });
+</script>
+<script>
+    document.querySelector('#room-name-submit').onclick = function(e) {
+        var roomName = document.querySelector('#room-name-input').value;
+        window.location.pathname = '/chat/';
+    };
 </script>
 {% endblock %}

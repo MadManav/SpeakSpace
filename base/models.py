@@ -3,7 +3,7 @@ from django.db import models
 import uuid
 import random
 import string
-
+from django.utils import timezone
 # ----------------------
 # Custom User Model
 # ----------------------
@@ -31,16 +31,45 @@ class Topic(models.Model):
     def __str__(self):
         return self.title
 
+
+class ChatRoom(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    participants = models.ManyToManyField(User, related_name='chat_rooms')
+
+    def __str__(self):
+        return f"Chat Room - {self.topic.title}"
+
+class ChatMessage(models.Model):
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.user.username}: {self.content[:50]}"
 # ----------------------
 # Evaluator Availability
 # ----------------------
+# ... existing code ...
+
 class EvaluatorAvailability(models.Model):
     evaluator = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'evaluator'})
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, default=1)  # Modified line
     available_from = models.DateTimeField()
     available_to = models.DateTimeField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-available_from']
 
     def __str__(self):
-        return f"{self.evaluator.username} | {self.available_from} - {self.available_to}"
+        return f"{self.evaluator.username} | {self.topic.title} | {self.available_from.strftime('%Y-%m-%d %H:%M')} - {self.available_to.strftime('%H:%M')}"
+
+# ... existing code ...
 
 # ----------------------
 # Participant Interview Request

@@ -18,4 +18,7 @@ urlpatterns = [
     path('evaluation/', views.evaluation_page, name='evaluation'),
     path('evaluation-dashboard/', views.evaluation_dashboard, name='evaluation-dashboard'),
     path('available-timings/', views.available_timings, name='available-timings'),
+    path('delete-availability/<int:slot_id>/', views.delete_availability, name='delete-availability'),
+    path('chat/', views.chat_room, name='chat_room'),
+    path('send-message/', views.send_message, name='send-message'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
