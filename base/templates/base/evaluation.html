@@ -2,48 +2,32 @@
 {% load static %}
 
 {% block styles %}
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/evaluation.css' %}">
-{% endblock %}
-
-{% block head_scripts %}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4F46E5',
-                        secondary: '#10B981',
-                        darkgray: '#1F2937',
-                        darktext: '#111827',
-                        lighttext: '#F9FAFB',
-                        secondarydark: '#4B5563',
-                        secondarylight: '#D1D5DB',
-                        lightbg: '#F9FAFB',
-                        secondarybg: '#FFFFFF',
-                        tertiarybg: '#F3F4F6',
-                        darkbg: '#111827',
-                        secondarydarkbg: '#1F2937',
-                        tertiarydarkbg: '#374151',
-                        success: '#10B981',
-                        warning: '#F59E0B',
-                        error: '#EF4444',
-                        info: '#3B82F6'
-                    }
-                }
-            }
-        }
-    </script>
+<link rel="stylesheet" href="{% static 'css/evaluation.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="font-[Poppins] bg-lightbg dark:bg-darkbg text-darktext dark:text-lighttext min-h-screen transition-colors duration-300">
-    <div class="max-w-4xl mx-auto p-6">
-        <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6">
-            <h1 class="text-2xl font-semibold mb-6">Session Evaluation</h1>
+<div class="flex h-screen">
+    {% include 'base/navbar.html' %}
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
+            <h1 class="text-xl font-semibold">Session Evaluation</h1>
+            
+            <!-- Dark mode toggle -->
+            <button onclick="document.documentElement.classList.toggle('dark')" 
+                    class="p-2 rounded-full bg-tertiarybg dark:bg-tertiarydarkbg text-secondarydark dark:text-secondarylight transition-all hover:scale-110">
+                <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
 
+        <!-- Evaluation Content -->
+        <div class="p-6">
             <!-- Participant Info -->
             <div class="mb-8 p-4 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg">
                 <div class="grid grid-cols-2 gap-4">
@@ -89,59 +73,26 @@
                         </div>
                     </div>
 
-                    <!-- Communication -->
+                    <!-- Comments -->
                     <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
-                        <label class="block font-medium mb-2">Communication Skills</label>
-                        <div class="flex items-center space-x-2">
-                            <input type="range" min="0" max="10" value="5"
-                                class="w-full h-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg appearance-none cursor-pointer">
-                            <span class="text-lg font-medium min-w-[2rem] text-center">5</span>
-                        </div>
+                        <label class="block font-medium mb-2">Additional Comments</label>
+                        <textarea rows="4" 
+                            class="w-full p-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg border-none focus:ring-2 focus:ring-primary"
+                            placeholder="Enter your feedback here..."></textarea>
                     </div>
-
-                    <!-- Overall -->
-                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
-                        <label class="block font-medium mb-2">Overall Performance</label>
-                        <div class="flex items-center space-x-2">
-                            <input type="range" min="0" max="10" value="5"
-                                class="w-full h-2 bg-tertiarybg dark:bg-tertiarydarkbg rounded-lg appearance-none cursor-pointer">
-                            <span class="text-lg font-medium min-w-[2rem] text-center">5</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feedback -->
-                <div class="space-y-2">
-                    <label class="block font-medium">Additional Feedback</label>
-                    <textarea rows="4"
-                        class="w-full p-3 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg"
-                        placeholder="Provide detailed feedback and suggestions for improvement..."></textarea>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-end space-x-4">
-                    <button type="button"
-                        class="px-6 py-2 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors">
-                        Submit Evaluation
-                    </button>
-                </div>
+                <button type="submit" 
+                    class="w-full bg-primary text-white py-3 rounded-lg hover:bg-opacity-90 transition-colors">
+                    Submit Evaluation
+                </button>
             </form>
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
-<script>
-    // Update rating display when slider changes
-    document.querySelectorAll('input[type="range"]').forEach(slider => {
-        slider.addEventListener('input', (e) => {
-            e.target.nextElementSibling.textContent = e.target.value;
-        });
-    });
-</script>
-{% endblock %}
+<script src="{% static 'js/evaluator.js' %}"></script>
+{% endblock scripts %}

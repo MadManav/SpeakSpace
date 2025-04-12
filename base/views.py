@@ -2,11 +2,23 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import User, Session, Topic, SessionParticipant,InterviewRequest,EvaluatorAvailability,ChatRoom,ChatMessage
+from .models import User, Session, Topic, SessionParticipant, InterviewRequest, EvaluatorAvailability, ChatRoom, ChatMessage
 from django.utils import timezone
 from django.db.models import Avg
 from django.http import JsonResponse
 from datetime import datetime
+from .jitsi import JitsiMeetManager
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods  # Add this import
+from django.shortcuts import render, redirect, get_object_or_404  # Add get_object_or_404
+# ... rest of your imports ...
+from django.views.generic import TemplateView
+from django.views.decorators.http import require_POST
 
 def loginPage(request):
     if request.user.is_authenticated:
@@ -126,7 +138,7 @@ def applySession(request):
                 preferred_date=preferred_date,
                 status='pending'
             )
-            return redirect('apply-session')
+            return redirect('apply-sessions')
     
     # Get all topics and annotate with interview request status
     topics = Topic.objects.all()
@@ -147,11 +159,32 @@ def applySession(request):
     return render(request, 'base/apply_sessions.html', context)
 
 
-def moderator(request):
-    interview_requests = InterviewRequest.objects.filter(status='pending').select_related('participant', 'topic')
-    return render(request, 'base/moderator.html', {
-        'interview_requests': interview_requests
-    })
+# ... existing code ...
+
+def moderator_view(request):
+    # Get available evaluators with future availability slots
+    available_evaluators = EvaluatorAvailability.objects.filter(
+        available_from__gte=timezone.now(),
+        topic__isnull=False
+    ).select_related('evaluator', 'topic').order_by('available_from')
+    
+    # Create a list of evaluators with their details
+    evaluator_data = []
+    for availability in available_evaluators:
+        evaluator_data.append({
+            'id': availability.evaluator.id,
+            'full_name': availability.evaluator.get_full_name(),
+            'username': availability.evaluator.username,
+            'topics': [availability.topic.title],  # Add all topics if multiple
+            'availability_slots': [f"{availability.available_from}|{availability.available_to}"]
+        })
+
+    context = {
+        'available_evaluators': evaluator_data,
+        'interview_requests': InterviewRequest.objects.filter(status='pending')
+    }
+    return render(request, 'base/moderator.html', context)
+
 
 @login_required(login_url='login')
 def update_user_image(request):
@@ -190,57 +223,88 @@ def evaluation_dashboard(request):
         return redirect('home')  # or wherever non-evaluators should go
     return render(request, 'base/EvaluatorDashboard.html')
 
+
+@require_http_methods(["POST"])
+def add_availability(request):
+    data = json.loads(request.body)
+    
+    # Convert string dates to datetime objects
+    available_from = datetime.fromisoformat(data['available_from'])
+    available_to = datetime.fromisoformat(data['available_to'])
+    
+    # Get topic by title or create it if it doesn't exist
+    try:
+        # First try to get by title
+        topic = Topic.objects.get(title__iexact=data['topic'])
+    except Topic.DoesNotExist:
+        try:
+            # If not found by title, try by ID (in case a numeric ID was passed)
+            topic_id = int(data['topic'])
+            topic = Topic.objects.get(id=topic_id)
+        except (ValueError, Topic.DoesNotExist):
+            return JsonResponse({
+                'success': False,
+                'error': f"Topic '{data['topic']}' not found"
+            }, status=404)
+    
+    # Create availability
+    availability = EvaluatorAvailability.objects.create(
+        evaluator=request.user,
+        topic=topic,
+        available_from=available_from,
+        available_to=available_to
+    )
+    
+    return JsonResponse({
+        'id': availability.id,
+        'topic': topic.title,
+        'formatted_date': available_from.strftime('%A, %b %d, %Y'),
+        'formatted_start_time': available_from.strftime('%I:%M %p'),
+        'formatted_end_time': available_to.strftime('%I:%M %p')
+    })
+
+@require_http_methods(["DELETE"])
+def delete_availability(request, availability_id):
+    availability = get_object_or_404(EvaluatorAvailability, id=availability_id, evaluator=request.user)
+    availability.delete()
+    return JsonResponse({'status': 'success'})
+
+def get_availability(request):
+    availabilities = EvaluatorAvailability.objects.filter(evaluator=request.user)
+    data = {
+        'availabilities': [{
+            'id': av.id,
+            'topic': av.topic.title,
+            'formatted_date': av.available_from.strftime('%A, %b %d, %Y'),
+            'formatted_start_time': av.available_from.strftime('%I:%M %p'),
+            'formatted_end_time': av.available_to.strftime('%I:%M %p')
+        } for av in availabilities]
+    }
+    return JsonResponse(data)
+
+# ... other view functions ...
+
 @login_required
 def available_timings(request):
     if request.user.role != 'evaluator':
-        messages.error(request, "Access denied. Only evaluators can access this page.")
         return redirect('home')
-
-    if request.method == 'POST':
-        topic_id = request.POST.get('topic')
-        date = request.POST.get('date')
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time')
-
-        # Combine date and time
-        available_from = datetime.strptime(f"{date} {start_time}", "%Y-%m-%d %H:%M")
-        available_to = datetime.strptime(f"{date} {end_time}", "%Y-%m-%d %H:%M")
-
-        if available_from >= available_to:
-            messages.error(request, "End time must be after start time")
-        else:
-            EvaluatorAvailability.objects.create(
-                evaluator=request.user,
-                topic_id=topic_id,
-                available_from=available_from,
-                available_to=available_to
-            )
-            messages.success(request, "Availability slot added successfully")
-        return redirect('available-timings')
-
+    
+    # Get all topics for the dropdown
+    topics = Topic.objects.all()
+    
+    # Get existing availabilities for this evaluator
+    availabilities = EvaluatorAvailability.objects.filter(
+        evaluator=request.user
+    ).order_by('available_from')
+    
     context = {
-        'topics': Topic.objects.all(),
-        'availability_slots': EvaluatorAvailability.objects.filter(
-            evaluator=request.user,
-            available_from__gte=datetime.now()
-        ).select_related('topic')
+        'topics': topics,
+        'availabilities': availabilities,
     }
     return render(request, 'base/available-timing.html', context)
 
-@login_required
-def delete_availability(request, slot_id):
-    if request.method == 'POST':
-        try:
-            slot = EvaluatorAvailability.objects.get(id=slot_id, evaluator=request.user)
-            slot.delete()
-            messages.success(request, "Availability slot deleted successfully")
-        except EvaluatorAvailability.DoesNotExist:
-            messages.error(request, "Availability slot not found")
-    return redirect('available-timings')
 
-
-
-
+@login_required(login_url='login')
 def chat_room(request):
     topic_id = request.GET.get('topic')
     
@@ -258,14 +322,15 @@ def chat_room(request):
     
     # Get all participants and messages in this chat room
     participants = chat_room.participants.all()
-    chat_messages = ChatMessage.objects.filter(room=chat_room).order_by('timestamp')  # Added this line
+    chat_messages = ChatMessage.objects.filter(room=chat_room).order_by('timestamp')
     
     context = {
+        'room_id': chat_room.id,  # Added room_id for WebSocket
         'topic': topic,
         'participants': participants,
         'chat_room': chat_room,
         'current_user': request.user,
-        'messages': chat_messages  # Added this line
+        'messages': chat_messages
     }
     return render(request, 'base/chat.html', context)
 
@@ -294,42 +359,138 @@ def send_message(request):
             })
     return JsonResponse({'status': 'error'}, status=400)
 
-# @login_required
-# def create_session(request):
-#     if request.method == 'POST':
-#         form = SessionForm(request.POST)
-#         if form.is_valid():
-#             session = form.save(commit=False)
-#             session.created_by = request.user
-#             session.save()
-            
-#             # Generate meeting credentials
-#             credentials = session.generate_meeting_credentials()
-            
-#             # Add participants
-#             participants = form.cleaned_data['participants']
-#             for user in participants:
-#                 SessionParticipant.objects.create(session=session, user=user)
-            
-#             # Notify participants
-#             session.notify_participants()
-            
-#             return redirect('session_detail', pk=session.pk)
-#     else:
-#         form = SessionForm()
+# class CreateSessionView(TemplateView):
+#     template_name = 'base/session_assignment.html'
     
-#     return render(request, 'create_session.html', {'form': form})
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+        
+#         # Get pending interview requests with participant details
+#         requests = InterviewRequest.objects.filter(status='pending').select_related(
+#             'participant', 'topic'
+#         )
+#         context['participants'] = requests
+        
+#         # Get available evaluators matching first request's criteria
+#         if requests.exists():
+#             request = requests.first()
+#             evaluators = User.objects.filter(
+#                 role='evaluator',
+#                 evaluatoravailability__topic=request.topic,
+#                 evaluatoravailability__available_from__lte=request.preferred_date,
+#                 evaluatoravailability__available_to__gte=request.preferred_date
+#             ).prefetch_related(
+#                 'evaluatoravailability_set',
+#                 'evaluatoravailability__topic'
+#             ).distinct()
+            
+#             context['evaluators'] = evaluators
+            
+#         return context
 
-# @login_required
-# def session_detail(request, pk):
-#     session = Session.objects.get(pk=pk)
-#     return render(request, 'session_detail.html', {'session': session})
+# @require_POST
+# def assign_evaluator(request):
+#     try:
+#         evaluator = User.objects.get(id=request.POST.get('evaluator_id'), role='evaluator')
+#         interview_request = InterviewRequest.objects.get(
+#             id=request.POST.get('participant_id'),
+#             status='pending'
+#         )
+        
+#         # Create session
+#         session = Session.objects.create(
+#             topic=interview_request.topic,
+#             created_by=request.user,
+#             selector=evaluator,
+#             start_time=request.POST.get('start_time'),
+#             duration_minutes=(timezone.datetime.fromisoformat(request.POST.get('end_time')) - 
+#                             timezone.datetime.fromisoformat(request.POST.get('start_time'))).seconds // 60,
+#             scheduled_by=request.user
+#         )
+        
+#         # Generate meeting credentials
+#         meeting_details = session.generate_meeting_credentials()
+        
+#         # Update interview request status
+#         interview_request.status = 'approved'
+#         interview_request.save()
+        
+#         # Notify participants
+#         session.notify_participants()
+        
+#         return JsonResponse({
+#             'status': 'success',
+#             'meeting_link': meeting_details['link'],
+#             'meeting_id': meeting_details['meeting_id']
+#         })
+        
+#     except Exception as e:
+#         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-# @login_required
-# def participant_dashboard(request):
-#     participant_sessions = SessionParticipant.objects.filter(user=request.user)
-#     selector_sessions = Session.objects.filter(selector=request.user)
-#     return render(request, 'participant_dashboard.html', {
-#         'participant_sessions': participant_sessions,
-#         'selector_sessions': selector_sessions
-#     })
+def session_assignment(request, request_id):
+    interview_request = get_object_or_404(InterviewRequest, id=request_id)
+    evaluators = interview_request.get_matching_evaluators()
+    
+    # Group evaluators by match type for the template
+    exact_matches = []
+    partial_matches = []
+    alternative_slots = []
+    
+    for evaluator in evaluators:
+        if hasattr(evaluator, 'match_score'):
+            exact_matches.append(evaluator)
+        elif hasattr(evaluator, 'overlap_minutes'):
+            partial_matches.append(evaluator)
+        elif hasattr(evaluator, 'time_difference'):
+            alternative_slots.append(evaluator)
+    
+    if request.method == 'POST':
+        evaluator_id = request.POST.get('evaluator')
+        selected_time = request.POST.get('session_time', None)
+        
+        # Get the selected evaluator availability
+        evaluator = get_object_or_404(EvaluatorAvailability, id=evaluator_id)
+        
+        # Determine session start time (either the requested time or an alternative)
+        if selected_time:
+            start_time = datetime.fromisoformat(selected_time)
+        else:
+            start_time = interview_request.preferred_date
+        
+        # Create session with appropriate duration
+        session = Session.objects.create(
+            topic=interview_request.topic,
+            created_by=request.user,
+            selector=evaluator.evaluator,
+            start_time=start_time,
+            duration_minutes=60,  # Default to 60 minutes
+            scheduled_by=request.user
+        )
+        
+        # Generate meeting credentials
+        session.generate_meeting_credentials()
+        
+        # Add participants to the session
+        SessionParticipant.objects.create(
+            session=session,
+            user=interview_request.participant
+        )
+        
+        # Update interview request status
+        interview_request.status = 'approved'
+        interview_request.save()
+        
+        # Show success message
+        messages.success(request, f"Session scheduled successfully with {evaluator.evaluator.get_full_name()}")
+        return redirect('moderator')
+        
+    return render(request, 'base/session_assignment.html', {
+        'interview_request': interview_request,
+        'exact_matches': exact_matches,
+        'partial_matches': partial_matches,
+        'alternative_slots': alternative_slots,
+    })
+
+def test_jitsi(request):
+    """A simple view to test Jitsi integration"""
+    return render(request, 'base/test_jitsi.html')

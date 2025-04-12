@@ -1,101 +1,97 @@
 {% extends 'main.html' %}
 {% load static %}
-{% block title %}Available Timing - SpeakSpace{% endblock %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{% static 'css/available-timing.css' %}">
+<style>
+    .schedule-item-enter {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    .schedule-item-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 300ms, transform 300ms;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="flex h-screen">
-    <!-- Sidebar remains the same -->
-    <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
-        <!-- User Profile Section -->
-        <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
-            <div class="profile-container">
-                <img id="userPhoto" src="{{ request.user.image.url }}" alt="User Profile" class="profile-photo">
-                <div class="photo-overlay">
-                    <span class="text-white text-sm">Change Photo</span>
-                </div>
-                <input type="file" id="photoUpload" accept="image/*" class="hidden">
-            </div>
-            <h3 id="username" class="text-lg font-semibold mt-3">{{ request.user.get_full_name }}</h3>
-            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ request.user.role|title }}</p>
-        </div>
-
-        <!-- Navigation remains the same -->
-    </div>
+    {% include 'navbar.html' %}
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
-        <!-- Header remains the same -->
+        <!-- Header -->
+        <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
+            <h1 class="text-xl font-semibold">Set Your Availability</h1>
+            
+            <!-- Dark mode toggle -->
+            <button onclick="document.documentElement.classList.toggle('dark')" 
+                    class="p-2 rounded-full bg-tertiarybg dark:bg-tertiarydarkbg text-secondarydark dark:text-secondarylight transition-all hover:scale-110">
+                <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
 
-        <!-- Available Timing Form & Schedule -->
-        <div class="p-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Set Available Time -->
-                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
-                    <h2 class="text-lg font-semibold mb-4">Set Available Time</h2>
-                    <form method="POST" class="space-y-4">
-                        {% csrf_token %}
-                        <!-- Topic -->
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Topic</label>
-                            <select name="topic" required class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
-                                <option value="">Select a topic</option>
-                                {% for topic in topics %}
-                                <option value="{{ topic.id }}">{{ topic.title }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <!-- Date & Time -->
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Date</label>
-                            <input type="date" name="date" required class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
+        <!-- Main Content Area -->
+        <div class="p-6 flex-1 overflow-y-auto">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Add Availability Form -->
+                    <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6">
+                        <h2 class="text-lg font-semibold mb-6">Add New Availability</h2>
+                        <form id="availabilityForm" class="space-y-4">
+                            {% csrf_token %}
                             <div>
-                                <label class="block text-sm font-medium mb-2">Start Time</label>
-                                <input type="time" name="start_time" required class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
+                                <label for="topic" class="block text-sm font-medium mb-2">Topic</label>
+                                <select id="topic" name="topic" required
+                                    class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg focus:ring-2 focus:ring-primary">
+                                    <option value="">Select a topic</option>
+                                    {% for topic in topics %}
+                                    <option value="{{ topic.title }}">{{ topic.title }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">End Time</label>
-                                <input type="time" name="end_time" required class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-colors">
-                            Add Time Slot
-                        </button>
-                    </form>
-                </div>
 
-                <!-- Current Schedule -->
-                <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
-                    <h2 class="text-lg font-semibold mb-4">Current Schedule</h2>
-                    <div class="space-y-4">
-                        {% for slot in availability_slots %}
-                        <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg flex justify-between items-center">
                             <div>
-                                <p class="font-medium">{{ slot.topic.title }}</p>
-                                <p class="text-sm text-secondarydark dark:text-secondarylight">
-                                    {{ slot.available_from|date:"l, M d, Y" }}
-                                </p>
-                                <p class="text-sm text-secondarydark dark:text-secondarylight">
-                                    {{ slot.available_from|time:"g:i A" }} - {{ slot.available_to|time:"g:i A" }}
-                                </p>
+                                <label for="date" class="block text-sm font-medium mb-2">Date</label>
+                                <input type="date" id="date" name="date" required
+                                    class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg focus:ring-2 focus:ring-primary">
                             </div>
-                            <form method="POST" action="{% url 'delete-availability' slot.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="text-error hover:text-opacity-80">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </form>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="startTime" class="block text-sm font-medium mb-2">Start Time</label>
+                                    <input type="time" id="startTime" name="startTime" required
+                                        class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg focus:ring-2 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label for="endTime" class="block text-sm font-medium mb-2">End Time</label>
+                                    <input type="time" id="endTime" name="endTime" required
+                                        class="w-full p-2 rounded-lg border border-lightborder dark:border-darkborder bg-tertiarybg dark:bg-tertiarydarkbg focus:ring-2 focus:ring-primary">
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-primary text-white py-3 rounded-lg hover:bg-opacity-90 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                Add Time Slot
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Schedule Display -->
+                    <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6">
+                        <h2 class="text-lg font-semibold mb-6">Your Schedule</h2>
+                        <div id="scheduleList" class="space-y-4">
+                            <!-- Schedule items will be loaded dynamically via JavaScript -->
+                            <p class="text-center text-gray-500 dark:text-gray-400 py-4">
+                                Loading your schedule...
+                            </p>
                         </div>
-                        {% empty %}
-                        <p class="text-center text-secondarydark dark:text-secondarylight">No availability slots set</p>
-                        {% endfor %}
                     </div>
                 </div>
             </div>

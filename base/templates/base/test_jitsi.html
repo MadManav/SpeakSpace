@@ -1,0 +1,50 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Test Jitsi Integration</h1>
+    
+    <div class="mb-4">
+        <button id="testButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Test Create Session
+        </button>
+    </div>
+    
+    <div id="resultContainer" class="mt-4 p-4 bg-gray-100 rounded hidden">
+        <h2 class="text-xl font-semibold mb-2">Result:</h2>
+        <pre id="resultOutput" class="bg-white p-2 rounded"></pre>
+    </div>
+
+    <script>
+        document.getElementById('testButton').addEventListener('click', function() {
+            // Sample data for creating a session
+            const sessionData = {
+                topic: 1, // Assuming topic ID 1 exists
+                date: new Date().toISOString(),
+                duration: 30,
+                evaluator: 1 // Assuming evaluator ID 1 exists
+            };
+
+            // Send request to create session
+            fetch('/create_session/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(sessionData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                document.getElementById('resultContainer').classList.remove('hidden');
+                document.getElementById('resultOutput').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('resultContainer').classList.remove('hidden');
+                document.getElementById('resultOutput').textContent = 'Error: ' + error;
+            });
+        });
+    </script>
+</div>
+{% endblock %}

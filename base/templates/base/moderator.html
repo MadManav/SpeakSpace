@@ -319,18 +319,20 @@
                                     </div>
                                     {% endif %}
                                     <div class="flex space-x-2">
-                                        <button 
-                                            class="create-session-btn flex-1 bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center"
-                                            data-request-id="{{ request.id }}"
-                                            data-participant="{{ request.participant.username }}"
-                                            data-topic="{{ request.topic.title }}"
-                                            data-date="{{ request.preferred_date|date:'Y-m-d' }}"
-                                            data-time="{{ request.preferred_date|date:'H:i' }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                                            </svg>
-                                            Create Session
-                                        </button>
+                                        <a href="{% url 'session-assignment' request.id %}" class="create-session-btn...">
+                                            <button 
+                                                class="create-session-btn flex-1 bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center"
+                                                data-request-id="{{ request.id }}"
+                                                data-participant="{{ request.participant.username }}"
+                                                data-topic="{{ request.topic.title }}"
+                                                data-date="{{ request.preferred_date|date:'Y-m-d' }}"
+                                                data-time="{{ request.preferred_date|date:'H:i' }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                                </svg>
+                                                Create Session
+                                            </button>
+                                        </a>
                                         <button 
                                             class="decline-btn flex-1 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors text-center flex items-center justify-center"
                                             data-request-id="{{ request.id }}">
@@ -354,75 +356,6 @@
         </main>
     </div>
 </div>
-
-<!-- Create Session Modal -->
-<div id="create-session-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transition-colors duration-200">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Create Session</h3>
-                <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <!-- User's Name -->
-                <div>
-                    <label for="user-name-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User's Name</label>
-                    <input type="text" id="user-name-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter user's name">
-                </div>
-                
-                <!-- Session Type/Topic -->
-                <div>
-                    <label for="modal-topic-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Topic</label>
-                    <input type="text" id="modal-topic-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter session topic">
-                </div>
-                
-                <!-- Date -->
-                <div>
-                    <label for="modal-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-                    <input type="date" id="modal-date-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                
-                <!-- Time -->
-                <div>
-                    <label for="modal-time-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Starting Time</label>
-                    <input type="time" id="modal-time-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                </div>
-                
-                <!-- Duration -->
-                <div>
-                    <label for="modal-duration-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
-                    <input type="number" id="modal-duration-input" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" value="45" min="15" step="15">
-                </div>
-                
-                <!-- Evaluator Dropdown -->
-                <div>
-                    <label for="evaluator-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Evaluator</label>
-                    <select id="evaluator-select" class="w-full bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="">Select an evaluator</option>
-                        <option value="John Doe">John Doe</option>
-                        <option value="Jane Smith">Jane Smith</option>
-                        <option value="Robert Johnson">Robert Johnson</option>
-                        <option value="Emily Davis">Emily Davis</option>
-                        <option value="Michael Wilson">Michael Wilson</option>
-                    </select>
-                </div>
-                
-                <div class="pt-4">
-                    <button id="modal-create-btn" class="w-full bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                        Create Session
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Scripts -->
 <script>
     // Dark mode handling
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -430,17 +363,17 @@
     } else {
         document.documentElement.classList.remove('dark');
     }
-    
+
     // Preloader
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
         const preloader = document.getElementById('preloader');
         setTimeout(() => {
             preloader.style.opacity = '0';
             preloader.style.visibility = 'hidden';
         }, 800);
     });
-    
-    document.addEventListener('DOMContentLoaded', function() {
+
+    document.addEventListener('DOMContentLoaded', function () {
         // DOM Elements
         const darkModeToggle = document.getElementById('darkModeToggle');
         const profileUpload = document.getElementById('profile-upload');
@@ -450,192 +383,106 @@
         const applySessionContent = document.getElementById('apply-session-content');
         const headerTitle = document.querySelector('header h1');
         const backToHomeBtn = document.getElementById('back-to-home-btn');
-        const createSessionModal = document.getElementById('create-session-modal');
-        const closeModalBtn = document.getElementById('close-modal');
-        const modalCreateBtn = document.getElementById('modal-create-btn');
 
-        // Dark Mode Toggle
-        darkModeToggle.addEventListener('click', function() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        // Event Listeners
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+        profileUpload.addEventListener('change', handleProfileUpload);
+        createSessionBtn.addEventListener('click', showApplySession);
+        backToHomeBtn.addEventListener('click', showHomePage);
+
+        document.querySelectorAll('.create-session-btn').forEach(button => {
+            button.addEventListener('click', handleRequestClick);
         });
 
-        // Profile Image Upload
-        profileUpload.addEventListener('change', function(event) {
+        document.querySelectorAll('.decline-btn').forEach(button => {
+            button.addEventListener('click', handleDeclineRequest);
+        });
+
+        // Functions
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        function handleProfileUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => profileImage.src = e.target.result;
                 reader.readAsDataURL(file);
             }
-        });
+        }
 
-        // Interview Request Handlers
-        document.querySelectorAll('.create-session-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const requestData = this.dataset;
-                createSessionModal.classList.remove('hidden');
-                
-                // Pre-fill modal with request data
-                document.getElementById('user-name-input').value = requestData.participant;
-                document.getElementById('modal-topic-input').value = requestData.topic;
-                document.getElementById('modal-date-input').value = requestData.date;
-                document.getElementById('modal-time-input').value = requestData.time;
-            });
-        });
-
-        document.querySelectorAll('.decline-btn').forEach(button => {
-            button.addEventListener('click', async function() {
-                if (confirm('Are you sure you want to decline this interview request?')) {
-                    const requestId = this.dataset.requestId;
-                    try {
-                        const response = await fetch(`/api/interview-requests/${requestId}/decline/`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': getCookie('csrftoken')
-                            }
-                        });
-
-                        if (response.ok) {
-                            const requestCard = this.closest('.request-card');
-                            requestCard.style.transition = 'opacity 0.5s ease';
-                            requestCard.style.opacity = '0';
-                            setTimeout(() => requestCard.remove(), 500);
-                        } else {
-                            alert('Failed to decline request. Please try again.');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('An error occurred. Please try again.');
-                    }
-                }
-            });
-        });
-
-        // Session Management
-        createSessionBtn.addEventListener('click', function() {
-            homeContent.classList.add('hidden');
-            applySessionContent.classList.remove('hidden');
-            headerTitle.textContent = 'Apply for Session';
-        });
-
-        backToHomeBtn.addEventListener('click', showHomePage);
-        closeModalBtn.addEventListener('click', () => createSessionModal.classList.add('hidden'));
-
-        modalCreateBtn.addEventListener('click', function() {
-            const formData = {
-                userName: document.getElementById('user-name-input').value,
-                topic: document.getElementById('modal-topic-input').value,
-                date: document.getElementById('modal-date-input').value,
-                time: document.getElementById('modal-time-input').value,
-                duration: document.getElementById('modal-duration-input').value,
-                evaluator: document.getElementById('evaluator-select').value
-            };
-
-            if (validateFormData(formData)) {
-                createNewSession(formData);
-                createSessionModal.classList.add('hidden');
-                showHomePage();
-            }
-        });
-
-        // Helper Functions
         function showHomePage() {
             homeContent.classList.remove('hidden');
             applySessionContent.classList.add('hidden');
             headerTitle.textContent = 'Home Page';
         }
 
-        function validateFormData(data) {
-            if (!data.userName) {
-                alert('Please enter user\'s name');
-                return false;
-            }
-            if (!data.topic) {
-                alert('Please enter a topic');
-                return false;
-            }
-            if (!data.date) {
-                alert('Please select a date');
-                return false;
-            }
-            if (!data.time) {
-                alert('Please select a starting time');
-                return false;
-            }
-            if (!data.duration || data.duration < 15) {
-                alert('Please enter a valid duration (minimum 15 minutes)');
-                return false;
-            }
-            if (!data.evaluator) {
-                alert('Please select an evaluator');
-                return false;
-            }
-            return true;
+        function showApplySession() {
+            homeContent.classList.add('hidden');
+            applySessionContent.classList.remove('hidden');
+            headerTitle.textContent = 'Apply for Session';
         }
 
-        function createNewSession(data) {
-            const sessionsContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3');
-            const newCard = createSessionCard(data);
-            sessionsContainer.insertBefore(newCard, sessionsContainer.firstChild);
-            
-            // Add animation
-            newCard.style.opacity = '0';
-            requestAnimationFrame(() => {
-                newCard.style.transition = 'opacity 0.5s ease';
-                newCard.style.opacity = '1';
-            });
-        }
+        async function handleDeclineRequest() {
+            if (confirm('Are you sure you want to decline this interview request?')) {
+                const requestId = this.dataset.requestId;
+                try {
+                    const response = await fetch(`/api/interview-requests/${requestId}/decline/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'  // Optional: if using Django template tag
+                        }
+                    });
 
-        function createSessionCard(data) {
-            const card = document.createElement('div');
-            card.className = 'session-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-200 border border-gray-200 dark:border-gray-700';
-            card.innerHTML = `
-                <div class="bg-primary bg-opacity-10 dark:bg-opacity-20 p-3 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${data.topic}</h3>
-                </div>
-                <div class="p-5">
-                    <div class="flex items-center mb-3">
-                        <div class="w-8 h-8 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-300">${data.duration} minutes</p>
-                    </div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                            </svg>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-300">0/6 Participants</p>
-                    </div>
-                    <button class="enter-btn w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors text-center flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                        Enter Session
-                    </button>
-                </div>
-            `;
-            return card;
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+                    if (response.ok) {
+                        const requestCard = this.closest('.request-card');
+                        requestCard.style.transition = 'opacity 0.5s ease';
+                        requestCard.style.opacity = '0';
+                        setTimeout(() => requestCard.remove(), 500);
                     }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
                 }
             }
-            return cookieValue;
+        }
+
+        function handleRequestClick() {
+            const requestId = this.dataset.requestId;
+            const participant = this.dataset.participant;
+            const topic = this.dataset.topic;
+            const date = this.dataset.date;
+            const time = this.dataset.time;
+        
+            fetch('/create-session/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // Optional: if using Django template tag
+                },
+                body: JSON.stringify({
+                    request_id: requestId,
+                    participant: participant,
+                    topic: topic,
+                    date: date,
+                    time: time
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Session created successfully!');
+                } else {
+                    alert('Failed to create session.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
         }
     });
 </script>

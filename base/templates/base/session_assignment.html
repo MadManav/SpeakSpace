@@ -1,0 +1,265 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/moderator.css' %}">
+<style>
+    .match-score {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .perfect-match {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    .good-match {
+        background-color: #e0f2fe;
+        color: #075985;
+    }
+    .partial-match {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    .alternative-match {
+        background-color: #f3f4f6;
+        color: #4b5563;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<!-- Preloader -->
+<div id="preloader">
+    <div class="loader"></div>
+</div>
+
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="sidebar bg-white dark:bg-gray-800 w-64 shadow-md flex flex-col transition-colors duration-200">
+        <!-- Profile Section -->
+        <div class="flex flex-col items-center justify-center p-6 border-b border-gray-200 dark:border-gray-700">
+            <div class="profile-container relative">
+                <div class="h-24 w-24 rounded-full overflow-hidden mb-4 border-2 border-primary">
+                    <img id="profile-image" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile" class="h-full w-full object-cover">
+                    <div class="profile-upload-overlay">
+                        <label for="profile-upload" class="cursor-pointer">
+                            <i class="fas fa-camera mr-1"></i> Edit
+                        </label>
+                        <input type="file" id="profile-upload" class="hidden" accept="image/*">
+                    </div>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Moderator Name</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Moderator</p>
+        </div>
+        
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-2 space-y-1">
+            <a href="{% url 'moderator' %}" class="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V16a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-5.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+                Home
+            </a>
+            <a href="#" class="flex items-center px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                Schedule
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-y-auto">
+        <header class="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center transition-colors duration-200">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Session Assignment</h1>
+            </div>
+            <!-- Dark Mode Toggle -->
+            <button id="darkModeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-200 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                </svg>
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-200 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
+
+        <main class="p-6">
+            <div class="max-w-4xl mx-auto">
+                <!-- Session Details Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Request Details</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Participant:</p>
+                            <p class="text-gray-900 dark:text-white">{{ interview_request.participant.username }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Requested Time:</p>
+                            <p class="text-gray-900 dark:text-white">{{ interview_request.preferred_date|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Topic:</p>
+                            <p class="text-primary">{{ interview_request.topic.title }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluator Selection Form -->
+                <form method="POST" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                    {% csrf_token %}
+                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Select Evaluator</h3>
+                    
+                    {% if not exact_matches and not partial_matches and not alternative_slots %}
+                        <div class="text-center py-8">
+                            <p class="text-gray-600 dark:text-gray-400">No available evaluators found for this request</p>
+                            <p class="mt-2 text-sm text-gray-500">Try adjusting the time or topic requirements</p>
+                        </div>
+                    {% else %}
+                        <!-- Perfect Matches Section -->
+                        {% if exact_matches %}
+                            <div class="mb-6">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                    <span class="match-score perfect-match mr-2">Perfect Matches</span>
+                                    <span class="text-sm text-gray-500">Available for the entire session</span>
+                                </h4>
+                                
+                                <div class="space-y-3">
+                                    {% for evaluator in exact_matches %}
+                                    <label class="flex items-center p-4 border border-green-200 dark:border-green-900 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer transition-colors">
+                                        <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
+                                               class="mr-3 h-5 w-5 text-primary">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
+                                                <div class="flex items-center space-x-2">
+                                                    {% if evaluator.topic_experience > 0 %}
+                                                    <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded-full">
+                                                        {{ evaluator.topic_experience }} past sessions
+                                                    </span>
+                                                    {% endif %}
+                                                    {% if evaluator.rating %}
+                                                    <span class="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-2 py-1 rounded-full flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                        </svg>
+                                                        {{ evaluator.rating|floatformat:1 }}
+                                                    </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
+                                            </p>
+                                        </div>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Partial Matches Section -->
+                        {% if partial_matches %}
+                            <div class="mb-6">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                    <span class="match-score partial-match mr-2">Partial Matches</span>
+                                    <span class="text-sm text-gray-500">Available for part of the session time</span>
+                                </h4>
+                                
+                                <div class="space-y-3">
+                                    {% for evaluator in partial_matches %}
+                                    <label class="flex items-center p-4 border border-amber-200 dark:border-amber-900 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 cursor-pointer transition-colors">
+                                        <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
+                                               class="mr-3 h-5 w-5 text-primary">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
+                                                <span class="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-2 py-1 rounded-full">
+                                                    {{ evaluator.overlap_minutes }} minutes overlap
+                                                </span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
+                                            </p>
+                                        </div>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Alternative Times Section -->
+                        {% if alternative_slots %}
+                            <div class="mb-6">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                    <span class="match-score alternative-match mr-2">Alternative Times</span>
+                                    <span class="text-sm text-gray-500">Available at different times</span>
+                                </h4>
+                                
+                                <div class="space-y-3">
+                                    {% for evaluator in alternative_slots %}
+                                    <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                                        <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
+                                               class="mr-3 h-5 w-5 text-primary">
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center">
+                                                <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
+                                                <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+                                                    {{ evaluator.time_difference }}
+                                                </span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
+                                            </p>
+                                            <div class="mt-2">
+                                                <input type="hidden" id="alternative_time_{{ evaluator.id }}" name="session_time" value="{{ evaluator.available_from|date:'Y-m-d\TH:i' }}" disabled>
+                                                <script>
+                                                    document.querySelector('input[value="{{ evaluator.id }}"]').addEventListener('change', function() {
+                                                        document.getElementById('alternative_time_{{ evaluator.id }}').disabled = !this.checked;
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <a href="{% url 'moderator' %}" class="btn-secondary px-6 py-2">Cancel</a>
+                            <button type="submit" class="btn-primary px-6 py-2">Confirm Assignment</button>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    // Enable/disable alternative time inputs based on radio selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioButtons = document.querySelectorAll('input[name="evaluator"]');
+        radioButtons.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                // First disable all alternative time inputs
+                document.querySelectorAll('input[name="session_time"]').forEach(function(input) {
+                    input.disabled = true;
+                });
+                
+                // Enable the one corresponding to the selected evaluator, if any
+                const altTimeInput = document.getElementById('alternative_time_' + this.value);
+                if (altTimeInput) {
+                    altTimeInput.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

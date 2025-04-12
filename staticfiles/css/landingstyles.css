@@ -1,0 +1,251 @@
+/* Global Styles */
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --dark: #1f2937;
+}
+
+/* Preloader Styles */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+
+.dark #preloader {
+    background-color: #111827;
+}
+
+.loader {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader:after {
+    content: '';
+    width: 64px;
+    height: 64px;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid var(--primary-dark);
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+}
+
+.loader:before {
+    content: '';
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border: 6px solid transparent;
+    border-bottom: 6px solid var(--primary-dark);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite reverse;
+}
+
+.loader-text {
+    position: absolute;
+    bottom: -40px;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--primary-dark);
+    opacity: 1;
+    animation: fadeInOut 2s ease-in-out infinite;
+}
+
+.dark .loader-text {
+    color: #818cf8;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+}
+
+/* Pulse animation for the logo when page loads */
+@keyframes pulse-scale {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.logo-animation {
+    animation: pulse-scale 2s ease-in-out 1;
+}
+
+/* Page content fade-in animation */
+.page-content {
+    opacity: 0;
+    animation: fadeIn 1s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Navbar scroll effect */
+.nav-scrolled {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.dark .nav-scrolled {
+    background-color: rgba(31, 41, 55, 0.95);
+}
+
+/* Animation Classes */
+.scroll-animate {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-animate.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-in-element {
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+}
+
+.fade-in-element.active {
+    opacity: 1;
+}
+
+.slide-up-element {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.slide-up-element.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-down-element {
+    transform: translateY(-30px);
+}
+
+.slide-left-element {
+    transform: translateX(30px);
+}
+
+.slide-right-element {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.slide-right-element.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.scale-element {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scale-element.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Hero section animations */
+.animate-slide-right {
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideRight 0.8s ease-out forwards;
+}
+
+.animate-slide-left {
+    opacity: 0;
+    transform: translateX(30px);
+    animation: slideLeft 0.8s ease-out forwards;
+}
+
+.animate-slide-up {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideUp 0.8s ease-out forwards;
+}
+
+.delay-100 {
+    animation-delay: 0.1s;
+}
+
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+.delay-300 {
+    animation-delay: 0.3s;
+}
+
+@keyframes slideRight {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Utility Classes */
+.text-primary {
+    color: var(--primary);
+}
+
+.bg-primary {
+    background-color: var(--primary);
+}
+
+.bg-dark {
+    background-color: var(--dark);
+}
+
+.border-primary {
+    border-color: var(--primary);
+}
+
+/* Hero Section Styles */
+.hero-gradient {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+.dark .hero-gradient {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.1) 100%);
+}

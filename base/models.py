@@ -41,10 +41,16 @@ class ChatRoom(models.Model):
         return f"Chat Room - {self.topic.title}"
 
 class ChatMessage(models.Model):
-    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user.username}: {self.content[:50]}"
 
     class Meta:
         ordering = ['timestamp']
@@ -69,7 +75,7 @@ class EvaluatorAvailability(models.Model):
     def __str__(self):
         return f"{self.evaluator.username} | {self.topic.title} | {self.available_from.strftime('%Y-%m-%d %H:%M')} - {self.available_to.strftime('%H:%M')}"
 
-# ... existing code ...
+    
 
 # ----------------------
 # Participant Interview Request
@@ -89,6 +95,130 @@ class InterviewRequest(models.Model):
     def __str__(self):
         return f"{self.participant.username} request on {self.topic.title} [{self.status}]"
 
+    def get_matching_evaluators(self):
+        """
+        Find evaluators available for this interview request with enhanced matching logic.
+        Returns evaluators sorted by best match criteria.
+        """
+        from django.db.models import Q, Count, Avg, F
+        from datetime import timedelta
+        
+        # Calculate the end time based on a standard session duration (e.g., 60 minutes)
+        session_duration = timedelta(minutes=60)
+        preferred_end_time = self.preferred_date + session_duration
+        
+        # First get exact matches (evaluators available during the whole session)
+        exact_matches = EvaluatorAvailability.objects.filter(
+            topic=self.topic,
+            available_from__lte=self.preferred_date,
+            available_to__gte=preferred_end_time
+        ).select_related('evaluator')
+        
+        if exact_matches.exists():
+            # If we have exact matches, prioritize by:
+            # 1. Expertise (number of past sessions with this topic)
+            # 2. Rating (average feedback score)
+            # 3. Current workload (fewer assigned sessions is better)
+            
+            # Get evaluator IDs from the matches
+            evaluator_ids = [match.evaluator.id for match in exact_matches]
+            
+            # Count existing sessions for these evaluators on this topic
+            from .models import Session
+            evaluator_experience = Session.objects.filter(
+                selector_id__in=evaluator_ids,
+                topic=self.topic
+            ).values('selector').annotate(
+                topic_sessions=Count('id')
+            )
+            
+            # Create a dictionary for quick lookup
+            experience_dict = {item['selector']: item['topic_sessions'] 
+                            for item in evaluator_experience}
+            
+            # Get average ratings
+            from .models import Feedback
+            evaluator_ratings = Feedback.objects.filter(
+                evaluator_id__in=evaluator_ids
+            ).values('evaluator').annotate(
+                avg_rating=Avg('rating')
+            )
+            
+            # Create a dictionary for quick lookup
+            ratings_dict = {item['evaluator']: item['avg_rating'] 
+                        for item in evaluator_ratings}
+            
+            # Count current workload (upcoming sessions)
+            upcoming_sessions = Session.objects.filter(
+                selector_id__in=evaluator_ids,
+                start_time__gte=timezone.now()
+            ).values('selector').annotate(
+                workload=Count('id')
+            )
+            
+            # Create a dictionary for quick lookup
+            workload_dict = {item['selector']: item['workload'] 
+                            for item in upcoming_sessions}
+            
+            # Add scoring info to each match
+            for match in exact_matches:
+                evaluator_id = match.evaluator.id
+                match.topic_experience = experience_dict.get(evaluator_id, 0)
+                match.rating = ratings_dict.get(evaluator_id, 3.0)  # Default rating if none
+                match.workload = workload_dict.get(evaluator_id, 0)
+                
+                # Calculate a score (higher is better)
+                # Weight factors according to priority
+                match.match_score = (
+                    (match.topic_experience * 3) +  # Topic experience has highest weight
+                    (match.rating * 2) -            # Rating has medium weight
+                    (match.workload * 1)            # Lower workload is better (negative factor)
+                )
+            
+            # Sort by the calculated score (descending)
+            return sorted(exact_matches, key=lambda x: x.match_score, reverse=True)
+        
+        # If no exact matches, try to find partial matches
+        # (available at the start time but maybe not for the whole session)
+        partial_matches = EvaluatorAvailability.objects.filter(
+            topic=self.topic,
+            available_from__lte=self.preferred_date,
+            available_to__gt=self.preferred_date  # At least some overlap
+        ).select_related('evaluator')
+        
+        if partial_matches.exists():
+            # Add an overlap duration attribute to each match
+            for match in partial_matches:
+                # Calculate overlap duration in minutes
+                overlap_end = min(match.available_to, preferred_end_time)
+                overlap_duration = (overlap_end - self.preferred_date).total_seconds() / 60
+                match.overlap_minutes = int(overlap_duration)
+                
+                # Only include if overlap is substantial (e.g., at least 30 minutes)
+                if match.overlap_minutes < 30:
+                    partial_matches = partial_matches.exclude(id=match.id)
+            
+            return partial_matches
+        
+        # If still no matches, try to find alternative times from evaluators 
+        # who can handle this topic
+        alternative_slots = EvaluatorAvailability.objects.filter(
+            topic=self.topic,
+            available_from__gte=timezone.now()  # Only future slots
+        ).order_by('available_from').select_related('evaluator')
+        
+        # Add a 'time_difference' attribute to show how far the slot is from the preferred time
+        for slot in alternative_slots:
+            if slot.available_from > self.preferred_date:
+                # The slot is later than preferred
+                time_diff = (slot.available_from - self.preferred_date).total_seconds() / 3600  # hours
+                slot.time_difference = f"{time_diff:.1f} hours later"
+            else:
+                # The slot is earlier than preferred
+                time_diff = (self.preferred_date - slot.available_from).total_seconds() / 3600  # hours
+                slot.time_difference = f"{time_diff:.1f} hours earlier"
+        
+        return alternative_slots
 # ----------------------
 # Interview Session
 # ----------------------
