@@ -10,55 +10,7 @@
 </div>
 
 <div class="flex h-screen">
-    <!-- Sidebar -->
-    <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
-        <!-- User Profile Section -->
-        <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
-            <form id="profileImageForm" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
-                    <img id="userPhoto" src="{{ user.image.url }}" alt="User Profile" class="w-full h-full object-cover">
-                    
-                    <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span class="text-white text-sm">Change Photo</span>
-                    </div>
-                    
-                    <input type="file" id="photoUpload" name="image" accept="image/*" class="hidden">
-                </div>
-            </form>
-            <h3 id="username" class="text-lg font-semibold">{{ user.username }}</h3>
-            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ user.role|title }}</p>
-        </div>
-
-        <!-- Sidebar Navigation -->
-        <nav class="p-4 space-y-4">
-            <a href="{% url 'analytics' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    My Progress
-                </div>
-            </a>
-            <a href="{% url 'apply-sessions' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Apply for Session
-                </div>
-            </a>
-            <a href="{% url 'logout' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                    </svg>
-                    Logout
-                </div>
-            </a>
-        </nav>
-    </div>
-
+    {% include 'base/slidebarp.html' %}
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
         <!-- Header -->
@@ -82,30 +34,83 @@
             <!-- Sessions Card -->
             <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
                 <h2 class="text-lg font-semibold mb-4">Sessions</h2>
-                <!-- Sessions List -->
-                <div class="space-y-4">
-                    {% for session in active_sessions %}
-                    <div class="p-4 border border-lightborder dark:border-darkborder rounded-lg">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h3 class="font-semibold">{{ session.topic.title }}</h3>
-                                <p class="text-sm text-secondarydark dark:text-secondarylight mt-1">
-                                    Created by: {{ session.created_by.username }}
-                                </p>
-                                <p class="text-sm text-secondarydark dark:text-secondarylight mt-1">
-                                    {{ session.start_time|date:"F j, Y, g:i a" }}
-                                </p>
+                
+                <!-- Pending Session Proposals -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3">Pending Proposals</h3>
+                    {% for session in proposed_sessions %}
+                    <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 mb-4">
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-lg">{{ session.topic.title }}</h4>
+                                <span class="bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 text-xs px-2 py-1 rounded-full">{{ session.status|title }}</span>
                             </div>
-                            <a href="#" class="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-                                Join
-                            </a>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                                <span class="block"><strong>Evaluator:</strong> {{ session.selector.get_full_name }}</span>
+                                <span class="block"><strong>Time:</strong> {{ session.start_time|date:"M j, Y H:i" }}</span>
+                                <span class="block"><strong>Duration:</strong> {{ session.duration_minutes }} minutes</span>
+                            </p>
+                            <div class="flex gap-2 justify-end">
+                                <form method="POST" action="{% url 'confirm_session' session.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                                        Accept
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'decline_session' session.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
+                                        Decline
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                     {% empty %}
-                    <p class="text-center text-secondarydark dark:text-secondarylight">No active sessions available</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-center py-4">No pending session proposals</p>
                     {% endfor %}
                 </div>
-            </div>
+                
+                <!-- Confirmed Sessions -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3">Confirmed Sessions</h3>
+                    {% for session in confirmed_sessions %}
+                    <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-4">
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-lg">{{ session.topic.title }}</h4>
+                                <span class="bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">{{ session.status|title }}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                                <span class="block"><strong>Evaluator:</strong> {{ session.selector.get_full_name }}</span>
+                                <span class="block"><strong>Time:</strong> {{ session.start_time|date:"M j, Y H:i" }}</span>
+                                <span class="block"><strong>Duration:</strong> {{ session.duration_minutes }} minutes</span>
+                                {% if session.meeting_link %}
+                                    <span class="block mt-2">
+                                        <strong>Meeting Link:</strong> 
+                                        <a href="{{ session.meeting_link }}" 
+                                        id="meeting-link-{{ session.id }}"
+                                        target="_blank" 
+                                        class="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
+                                        data-start-time="{{ session.start_time|date:'Y-m-d H:i:s' }}"
+                                        {% if session.start_time > current_time %}disabled{% endif %}>
+                                            Join Meeting
+                                        </a>
+                                        <span id="countdown-{{ session.id }}" class="text-sm text-gray-500 ml-2">
+                                            {% if session.start_time > current_time %}
+                                            (Starts in: calculating...)
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 dark:text-gray-400 text-center py-4">No confirmed sessions</p>
+                    {% endfor %}
+                </div>
+                
 
             <!-- Chat Room Card -->
             <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
@@ -142,7 +147,7 @@
         </div>
     </div>
 </div>
-
+<script src="{% static 'js/meeting.js' %}"></script>
 <script>
     // Check for user's preferred color scheme
     if (localStorage.getItem('darkMode') === 'true' || 
@@ -226,10 +231,5 @@
         loader.classList.add('loader-hidden');
     });
 </script>
-<script>
-    document.querySelector('#room-name-submit').onclick = function(e) {
-        var roomName = document.querySelector('#room-name-input').value;
-        window.location.pathname = '/chat/';
-    };
-</script>
+
 {% endblock %}

@@ -6,36 +6,7 @@
 {% block content %}
 <div class="flex h-screen font-[Poppins] text-darktext dark:text-lighttext transition-colors duration-300">
     <!-- Sidebar -->
-    <div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
-        <!-- User Profile Section -->
-        <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
-            <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
-                <img id="userPhoto" src="{% static 'assets/default-avatar.png' %}" alt="User Profile" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span class="text-white text-sm">Change Photo</span>
-                </div>
-                <input type="file" id="photoUpload" accept="image/*" class="hidden">
-            </div>
-            <h3 id="username" class="text-lg font-semibold">{{ user.username }}</h3>
-            <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ user.role }}</p>
-        </div>
-
-        <!-- Sidebar Navigation -->
-        <nav class="p-4 space-y-4">
-            <a href="{% url 'analytics' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line mr-3"></i>
-                    My Progress
-                </div>
-            </a>
-            <a href="{% url 'logout' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
-                <div class="flex items-center">
-                    <i class="fas fa-sign-out-alt mr-3"></i>
-                    Logout
-                </div>
-            </a>
-        </nav>
-    </div>
+    {% include 'base/slidebarp.html' %}
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">

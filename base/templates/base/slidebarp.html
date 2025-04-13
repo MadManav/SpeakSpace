@@ -1,0 +1,48 @@
+<!-- Sidebar -->
+<div class="w-64 border-r border-lightborder dark:border-darkborder bg-secondarybg dark:bg-secondarydarkbg">
+    <!-- User Profile Section -->
+    <div class="p-6 border-b border-lightborder dark:border-darkborder flex flex-col items-center">
+        <form id="profileImageForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="w-24 h-24 rounded-full border-2 border-primary dark:border-primary flex items-center justify-center mb-3 overflow-hidden relative group cursor-pointer">
+                <img id="userPhoto" src="{{ user.image.url }}" alt="User Profile" class="w-full h-full object-cover">
+                
+                <div class="absolute inset-0 bg-darkbg/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span class="text-white text-sm">Change Photo</span>
+                </div>
+                
+                <input type="file" id="photoUpload" name="image" accept="image/*" class="hidden">
+            </div>
+        </form>
+        <h3 id="username" class="text-lg font-semibold">{{ user.username }}</h3>
+        <p id="userRole" class="text-sm text-secondarydark dark:text-secondarylight">{{ user.role|title }}</p>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="p-4 space-y-4">
+        <a href="{% url 'analytics' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                My Progress
+            </div>
+        </a>
+        <a href="{% url 'apply-sessions' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Apply for Session
+            </div>
+        </a>
+        <a href="{% url 'logout' %}" class="block p-3 rounded-lg border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors mt-8 text-error">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                Logout
+            </div>
+        </a>
+    </nav>
+</div>

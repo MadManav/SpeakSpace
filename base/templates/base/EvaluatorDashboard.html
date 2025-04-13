@@ -30,22 +30,44 @@
                 
                 <!-- Session Cards -->
                 <div class="space-y-6">
-                    <!-- Session Card 1 -->
-                    <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg p-6 shadow-sm">
-                        <h3 class="text-lg font-medium mb-2">Public Speaking Basics</h3>
-                        <p class="text-sm text-secondarydark dark:text-secondarylight mb-4">January 20, 2024 - 10:00 AM</p>
-                        <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
-                            Enter Session
-                        </button>
-                    </div>
-
-                    <!-- Session Card 2 -->
-                    <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg p-6 shadow-sm">
-                        <h3 class="text-lg font-medium mb-2">Interview Preparation</h3>
-                        <p class="text-sm text-secondarydark dark:text-secondarylight mb-4">January 21, 2024 - 2:00 PM</p>
-                        <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
-                            Enter Session
-                        </button>
+                    <!-- Upcoming Sessions -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3">Upcoming Sessions</h3>
+                        {% for session in upcoming_sessions %}
+                        <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-4">
+                            <div class="flex flex-col">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-semibold text-lg">{{ session.topic.title }}</h4>
+                                    <span class="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full">Upcoming</span>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                                    <span class="block"><strong>Participant:</strong> {{ session.participants.first.user.get_full_name }}</span>
+                                    <span class="block"><strong>Time:</strong> {{ session.start_time|date:"M j, Y H:i" }}</span>
+                                    <span class="block"><strong>Duration:</strong> {{ session.duration_minutes }} minutes</span>
+                                    {% if session.meeting_link %}
+                                        <span class="block mt-2">
+                                            <strong>Meeting Link:</strong> 
+                                            <a href="{{ session.meeting_link }}" 
+                                            id="meeting-link-{{ session.id }}"
+                                            target="_blank" 
+                                            class="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
+                                            data-start-time="{{ session.start_time|date:'Y-m-d H:i:s' }}"
+                                            {% if session.start_time > current_time %}disabled{% endif %}>
+                                                Join Meeting
+                                            </a>
+                                            <span id="countdown-{{ session.id }}" class="text-sm text-gray-500 ml-2">
+                                                {% if session.start_time > current_time %}
+                                                (Starts in: calculating...)
+                                                {% endif %}
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-gray-500 dark:text-gray-400 text-center py-4">No upcoming sessions</p>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -55,4 +77,5 @@
 
 {% block scripts %}
     <script src="{% static 'js/evaluator.js' %}"></script>
+    <script src="{% static 'js/meeting-link.js' %}"></script>
 {% endblock scripts %}

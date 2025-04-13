@@ -28,4 +28,6 @@ urlpatterns = [
     path('session-assignment/<int:request_id>/', session_assignment, name='session-assignment'),
     # path('api/assign-evaluator/', views.assign_evaluator, name='assign_evaluator'),
     path('test_jitsi/', views.test_jitsi, name='test_jitsi'),
+    path('sessions/<int:session_id>/confirm/', views.confirm_session, name='confirm_session'),
+    path('sessions/<int:session_id>/decline/', views.decline_session, name='decline_session'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

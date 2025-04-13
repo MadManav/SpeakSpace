@@ -66,7 +66,12 @@ def registerPage(request):
             )
             
             login(request, user)
-            return redirect('home')  # Redirect to home page after successful registration
+            # Redirect based on user role
+            if user.role == 'moderator':
+                return redirect('moderator')
+            elif user.role == 'evaluator':
+                return redirect('evaluation-dashboard')
+            return redirect('home')
             
         except IntegrityError as e:
             messages.error(request, 'Username or email already exists')
@@ -89,42 +94,83 @@ def landingPage(request):
 @login_required(login_url='login')
 def homePage(request):
     topics = Topic.objects.all()
-    active_sessions = Session.objects.filter(start_time__gte=timezone.now()).order_by('start_time')
     
-    # Get all chat rooms where user is a participant
+    # Get all session proposals that need user action
+    proposed_sessions = Session.objects.filter(
+        status='proposed',
+        participants__user=request.user
+    ).select_related('topic', 'selector')
+    
+    # Get confirmed sessions (accepted proposals)
+    confirmed_sessions = Session.objects.filter(
+        status='confirmed',
+        participants__user=request.user
+    ).select_related('topic', 'selector')
+    
+    # Get scheduled upcoming sessions
+    upcoming_sessions = Session.objects.filter(
+        status='scheduled',
+        participants__user=request.user,
+        start_time__gte=timezone.now()
+    ).order_by('start_time').select_related('topic', 'selector')
+    
+    # Get user's chat rooms for joined status
     user_chat_rooms = ChatRoom.objects.filter(participants=request.user)
     joined_topic_ids = user_chat_rooms.values_list('topic_id', flat=True)
     
     context = {
         'topics': topics,
-        'active_sessions': active_sessions,
+        'proposed_sessions': proposed_sessions,
+        'confirmed_sessions': confirmed_sessions,
+        'upcoming_sessions': upcoming_sessions,
         'user': request.user,
         'joined_topic_ids': joined_topic_ids,
+        'current_time': timezone.now(),
     }
     return render(request, 'base/home.html', context)
 
 
 @login_required(login_url='login')
 def analyticsPage(request):
-    # Get the user's sessions using the direct participants field
-    #user_sessions = Session.objects.filter(participants=request.user)
-    
-    # Calculate statistics
-    # total_sessions = user_sessions.count()
-    # average_rating = user_sessions.aggregate(Avg('rating'))['rating__avg'] or 0
-    
-    # Get recent feedback
-    # recent_feedback = user_sessions.exclude(feedback='').order_by('-start_time')[:5]
-    
+    # Get user's sessions with ratings
+    user_sessions = Session.objects.filter(
+        participants__user=request.user,
+        status='completed'
+    ).select_related('topic').order_by('-start_time')
+
+    # Calculate subject-wise ratings
+    subject_ratings = {}
+    for session in user_sessions:
+        topic = session.topic.title
+        if topic not in subject_ratings:
+            subject_ratings[topic] = {
+                'total_rating': 0,
+                'count': 0,
+                'sessions': []
+            }
+        subject_ratings[topic]['total_rating'] += session.rating or 0
+        subject_ratings[topic]['count'] += 1
+        if len(subject_ratings[topic]['sessions']) < 5:  # Keep only last 5 sessions
+            subject_ratings[topic]['sessions'].append({
+                'date': session.start_time,
+                'rating': session.rating or 0
+            })
+
+    # Calculate averages and prepare graph data
+    analytics_data = {}
+    for topic, data in subject_ratings.items():
+        avg_rating = data['total_rating'] / data['count'] if data['count'] > 0 else 0
+        analytics_data[topic] = {
+            'average_rating': round(avg_rating, 1),
+            'total_sessions': data['count'],
+            'last_five_sessions': list(reversed(data['sessions']))  # Most recent first
+        }
+
     context = {
-        # 'total_sessions': total_sessions,
-        # 'average_rating': round(average_rating, 1),
-        # 'recent_feedback': recent_feedback,
+        'analytics_data': analytics_data,
         'user': request.user,
     }
-    
     return render(request, 'base/analytics.html', context)
-
 
 @login_required(login_url='login')
 def applySession(request):
@@ -221,8 +267,19 @@ def evaluation_page(request):
 @login_required
 def evaluation_dashboard(request):
     if request.user.role != 'evaluator':
-        return redirect('home')  # or wherever non-evaluators should go
-    return render(request, 'base/EvaluatorDashboard.html')
+        return redirect('home')
+    
+    # Get upcoming sessions where the current user is the evaluator (selector)
+    upcoming_sessions = Session.objects.filter(
+        selector=request.user,
+        start_time__gte=timezone.now()
+    ).select_related('topic').order_by('start_time')
+    
+    context = {
+        'upcoming_sessions': upcoming_sessions,
+        'current_time': timezone.now(),
+    }
+    return render(request, 'base/EvaluatorDashboard.html', context)
 
 
 @require_http_methods(["POST"])
@@ -439,16 +496,13 @@ def session_assignment(request, request_id):
         evaluator_id = request.POST.get('evaluator')
         selected_time = request.POST.get('session_time', None)
 
-        # Get the selected availability slot
         evaluator_availability = get_object_or_404(EvaluatorAvailability, id=evaluator_id)
         
-        # Determine match type based on availability list
         if evaluator_availability in exact_matches:
             match_type = 'perfect'
         else:
             match_type = 'alternative'
 
-        # Create session with proper type
         session = Session.objects.create(
             topic=interview_request.topic,
             created_by=request.user,
@@ -456,29 +510,27 @@ def session_assignment(request, request_id):
             start_time=datetime.fromisoformat(selected_time) if selected_time else interview_request.preferred_date,
             duration_minutes=60,
             scheduled_by=request.user,
-            assignment_type=match_type
+            assignment_type=match_type,
+            status='proposed' if match_type == 'alternative' else 'scheduled',
+            selector_availability=evaluator_availability
         )
 
-        # Add participant
         SessionParticipant.objects.create(
             session=session,
             user=interview_request.participant
         )
 
-        # Handle meeting creation based on match type
         if match_type == 'perfect':
             session.generate_meeting_credentials()
-            session.save()  # Explicit save after generating credentials
+            session.save()
             interview_request.status = 'approved'
             msg = f"Session scheduled with {evaluator_availability.evaluator.get_full_name()}"
         else:
-            session.generate_meeting_credentials()
-            session.meeting_link += "?provisional=true"
-            session.save()
+            session.save()  # No meeting link generated here
             interview_request.status = 'pending_confirmation'
-            msg = f"Proposal sent to participant with {evaluator_availability.evaluator.get_full_name()}"
+            msg = f"Time proposal sent to participant"
 
-        messages.success(request, f"{msg}. Meeting link: {session.meeting_link}")
+        messages.success(request, f"{msg}")
         interview_request.save()
         return redirect('moderator')
 
@@ -535,6 +587,40 @@ def accept_session(request, session_id):
         messages.success(request, 'Session confirmed!')
         return redirect('home')
 
+@login_required(login_url='login')
+def confirm_session(request, session_id):
+    session = get_object_or_404(Session, id=session_id)
+    
+    # Verify the user is a participant of this session
+    if not SessionParticipant.objects.filter(session=session, user=request.user).exists():
+        messages.error(request, "You are not a participant in this session.")
+        return redirect('home')
+    
+    if request.method == 'POST':
+        session.status = 'confirmed'
+        session.participant_approved = True
+        
+        # Generate meeting details if not already generated
+        if not session.meeting_link:
+            session.generate_meeting_credentials()
+            
+        session.save()
+        messages.success(request, 'Session confirmed successfully!')
+    
+    return redirect('home')
 
-
-
+@login_required(login_url='login')
+def decline_session(request, session_id):
+    session = get_object_or_404(Session, id=session_id)
+    
+    # Verify the user is a participant of this session
+    if not SessionParticipant.objects.filter(session=session, user=request.user).exists():
+        messages.error(request, "You are not a participant in this session.")
+        return redirect('home')
+    
+    if request.method == 'POST':
+        session.status = 'declined'
+        session.save()
+        messages.info(request, 'Session declined')
+    
+    return redirect('home')

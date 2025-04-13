@@ -150,10 +150,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Add this at the bottom of the file
 AUTH_USER_MODEL = 'base.User'
 
-
 JITSI_MEET = {
     'DOMAIN': 'meet.jit.si',
-    'ROOM_NAME_PREFIX': 'SpeakSpace_',
-    'APP_ID': '',  # Leave empty for meet.jit.si
-    'APP_SECRET': '',  # Leave empty for meet.jit.si
-}   
+    'ROOM_NAME_PREFIX': 'speakspace-',
+    'APP_ID': None,  # For public Jitsi Meet server
+    'APP_SECRET': None,  # For public Jitsi Meet server
+    'DEFAULT_DURATION': 60,  # Default session duration in minutes
+}
+
+# Add WebSocket settings if not already present
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
