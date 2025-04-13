@@ -10,7 +10,6 @@ from datetime import datetime
 from .jitsi import JitsiMeetManager
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -19,33 +18,31 @@ from django.shortcuts import render, redirect, get_object_or_404  # Add get_obje
 # ... rest of your imports ...
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_POST
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 def loginPage(request):
-    if request.user.is_authenticated:
-        return redirect('home')
+    # if request.user.is_authenticated:
+    #     return redirect('home')
 
     if request.method == 'POST':
         username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
-        # Check for moderator credentials
-        if username == 'moderator' and password == 'moderator':
-            return redirect('moderator')
+        user = authenticate(request, username=username, password=password)
         
-        try:
-            user = User.objects.get(username=username)
-            user = authenticate(request, username=username, password=password)
-            
-            if user is not None:
-                login(request, user)
-                if user.role == 'evaluator':
-                    return redirect('evaluation-dashboard')  # Changed from evaluator_dashboard to evaluation-dashboard
-                return redirect('home')
-            else:
-                messages.error(request, 'Invalid username or password')
-        except:
-            messages.error(request, 'User does not exist')
-            
+        if user is not None:
+            login(request, user)
+            print(f"DEBUG: User {user.username} logged in with role: {user.role}")  # Add debug line
+            if user.role == 'moderator':
+                print(f"DEBUG: Redirecting moderator to moderator view")  # Add debug line
+                return redirect('moderator')
+            elif user.role == 'evaluator':
+                return redirect('evaluation-dashboard')
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid username or password')
+    
     return render(request, 'base/login.html')
 
 def registerPage(request):
@@ -71,8 +68,12 @@ def registerPage(request):
             login(request, user)
             return redirect('home')  # Redirect to home page after successful registration
             
+        except IntegrityError as e:
+            messages.error(request, 'Username or email already exists')
+        except ValidationError as e:
+            messages.error(request, '\n'.join(e.messages))
         except Exception as e:
-            messages.error(request, 'An error occurred during registration')
+            messages.error(request, f'Registration error: {str(e)}')
             
     return render(request, 'base/register.html')
     
@@ -175,13 +176,13 @@ def moderator_view(request):
             'id': availability.evaluator.id,
             'full_name': availability.evaluator.get_full_name(),
             'username': availability.evaluator.username,
-            'topics': [availability.topic.title],  # Add all topics if multiple
+            'topics': [availability.topic.title],
             'availability_slots': [f"{availability.available_from}|{availability.available_to}"]
         })
 
     context = {
         'available_evaluators': evaluator_data,
-        'interview_requests': InterviewRequest.objects.filter(status='pending')
+        'interview_requests': InterviewRequest.objects.filter(status='pending')  # Changed status -> request_status
     }
     return render(request, 'base/moderator.html', context)
 
@@ -426,71 +427,114 @@ def send_message(request):
         
 #     except Exception as e:
 #         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-
+@login_required(login_url='login')
 def session_assignment(request, request_id):
     interview_request = get_object_or_404(InterviewRequest, id=request_id)
     evaluators = interview_request.get_matching_evaluators()
     
-    # Group evaluators by match type for the template
-    exact_matches = []
-    partial_matches = []
-    alternative_slots = []
-    
-    for evaluator in evaluators:
-        if hasattr(evaluator, 'match_score'):
-            exact_matches.append(evaluator)
-        elif hasattr(evaluator, 'overlap_minutes'):
-            partial_matches.append(evaluator)
-        elif hasattr(evaluator, 'time_difference'):
-            alternative_slots.append(evaluator)
-    
+    exact_matches = evaluators.get('exact_matches', [])
+    alternative_slots = evaluators.get('alternative_slots', [])
+
     if request.method == 'POST':
         evaluator_id = request.POST.get('evaluator')
         selected_time = request.POST.get('session_time', None)
+
+        # Get the selected availability slot
+        evaluator_availability = get_object_or_404(EvaluatorAvailability, id=evaluator_id)
         
-        # Get the selected evaluator availability
-        evaluator = get_object_or_404(EvaluatorAvailability, id=evaluator_id)
-        
-        # Determine session start time (either the requested time or an alternative)
-        if selected_time:
-            start_time = datetime.fromisoformat(selected_time)
+        # Determine match type based on availability list
+        if evaluator_availability in exact_matches:
+            match_type = 'perfect'
         else:
-            start_time = interview_request.preferred_date
-        
-        # Create session with appropriate duration
+            match_type = 'alternative'
+
+        # Create session with proper type
         session = Session.objects.create(
             topic=interview_request.topic,
             created_by=request.user,
-            selector=evaluator.evaluator,
-            start_time=start_time,
-            duration_minutes=60,  # Default to 60 minutes
-            scheduled_by=request.user
+            selector=evaluator_availability.evaluator,
+            start_time=datetime.fromisoformat(selected_time) if selected_time else interview_request.preferred_date,
+            duration_minutes=60,
+            scheduled_by=request.user,
+            assignment_type=match_type
         )
-        
-        # Generate meeting credentials
-        session.generate_meeting_credentials()
-        
-        # Add participants to the session
+
+        # Add participant
         SessionParticipant.objects.create(
             session=session,
             user=interview_request.participant
         )
-        
-        # Update interview request status
-        interview_request.status = 'approved'
+
+        # Handle meeting creation based on match type
+        if match_type == 'perfect':
+            session.generate_meeting_credentials()
+            session.save()  # Explicit save after generating credentials
+            interview_request.status = 'approved'
+            msg = f"Session scheduled with {evaluator_availability.evaluator.get_full_name()}"
+        else:
+            session.generate_meeting_credentials()
+            session.meeting_link += "?provisional=true"
+            session.save()
+            interview_request.status = 'pending_confirmation'
+            msg = f"Proposal sent to participant with {evaluator_availability.evaluator.get_full_name()}"
+
+        messages.success(request, f"{msg}. Meeting link: {session.meeting_link}")
         interview_request.save()
-        
-        # Show success message
-        messages.success(request, f"Session scheduled successfully with {evaluator.evaluator.get_full_name()}")
         return redirect('moderator')
-        
+
     return render(request, 'base/session_assignment.html', {
         'interview_request': interview_request,
         'exact_matches': exact_matches,
-        'partial_matches': partial_matches,
         'alternative_slots': alternative_slots,
     })
 
 def test_jitsi(request):
     """A simple view to test Jitsi integration"""
     return render(request, 'base/test_jitsi.html')
+
+
+# In views.py
+def assign_session(request, request_id):
+    interview_request = get_object_or_404(InterviewRequest, id=request_id)
+    
+    if request.method == 'POST':
+        evaluator_id = request.POST.get('evaluator')
+        evaluator_availability = get_object_or_404(EvaluatorAvailability, id=evaluator_id)
+        
+        # Create session
+        session = Session.objects.create(
+            topic=interview_request.topic,
+            created_by=request.user,
+            selector=evaluator_availability.evaluator,
+            scheduled_by=request.user,
+            start_time=evaluator_availability.available_from,
+            duration_minutes=60,
+            assignment_type='perfect' if evaluator_availability.available_to >= interview_request.preferred_date + timedelta(minutes=60) else 'alternative'
+        )
+        
+        if session.assignment_type == 'perfect':
+            session.generate_meeting_credentials()
+            session.participants.add(interview_request.participant)
+            messages.success(request, 'Session created successfully!')
+        else:
+            messages.success(request, 'Session proposal sent to participant')
+        
+        interview_request.status = 'approved'
+        interview_request.save()
+        
+        return redirect('moderator')
+
+# In views.py
+def accept_session(request, session_id):
+    session = get_object_or_404(Session, id=session_id)
+    if request.method == 'POST':
+        session.participant_approved = True
+        session.generate_meeting_credentials()
+        session.participants.add(request.user)
+        session.save()
+        messages.success(request, 'Session confirmed!')
+        return redirect('home')
+
+
+
+

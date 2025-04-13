@@ -115,127 +115,97 @@
                     {% csrf_token %}
                     <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Select Evaluator</h3>
                     
-                    {% if not exact_matches and not partial_matches and not alternative_slots %}
-                        <div class="text-center py-8">
-                            <p class="text-gray-600 dark:text-gray-400">No available evaluators found for this request</p>
-                            <p class="mt-2 text-sm text-gray-500">Try adjusting the time or topic requirements</p>
-                        </div>
+                    {% if not exact_matches and not alternative_slots %}
+                    <div class="text-center py-8">
+                        <p class="text-gray-600 dark:text-gray-400">No available evaluators found for this request</p>
+                    </div>
                     {% else %}
-                        <!-- Perfect Matches Section -->
-                        {% if exact_matches %}
-                            <div class="mb-6">
-                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
-                                    <span class="match-score perfect-match mr-2">Perfect Matches</span>
-                                    <span class="text-sm text-gray-500">Available for the entire session</span>
-                                </h4>
+                    {% if exact_matches %}
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                            <span class="match-score perfect-match mr-2">Perfect Matches</span>
+                        </h4>
+                        <div class="space-y-3">
+                            {% for evaluator in exact_matches %}
+                            <label class="flex items-center p-4 border border-green-200 dark:border-green-900 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer transition-colors">
+                                <!-- Inside the radio button for perfect matches -->
+                                <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
+                                       data-type="perfect" class="mr-3 h-5 w-5 text-primary">
+                                <input type="hidden" name="match_type" value="perfect">
                                 
-                                <div class="space-y-3">
-                                    {% for evaluator in exact_matches %}
-                                    <label class="flex items-center p-4 border border-green-200 dark:border-green-900 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer transition-colors">
-                                        <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
-                                               class="mr-3 h-5 w-5 text-primary">
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-center">
-                                                <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
-                                                <div class="flex items-center space-x-2">
-                                                    {% if evaluator.topic_experience > 0 %}
-                                                    <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded-full">
-                                                        {{ evaluator.topic_experience }} past sessions
-                                                    </span>
-                                                    {% endif %}
-                                                    {% if evaluator.rating %}
-                                                    <span class="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-2 py-1 rounded-full flex items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                        </svg>
-                                                        {{ evaluator.rating|floatformat:1 }}
-                                                    </span>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
-                                            </p>
+                                <!-- Inside the radio button for alternative slots -->
+                                <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
+                                       data-type="alternative" class="mr-3 h-5 w-5 text-primary">
+                                <input type="hidden" name="match_type" value="alternative">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
+                                        <div class="flex items-center space-x-2">
+                                            {% if evaluator.topic_experience > 0 %}
+                                            <span class="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded-full">
+                                                {{ evaluator.topic_experience }} past sessions
+                                            </span>
+                                            {% endif %}
+                                            {% if evaluator.rating %}
+                                            <span class="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-2 py-1 rounded-full flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                </svg>
+                                                {{ evaluator.rating|floatformat:1 }}
+                                            </span>
+                                            {% endif %}
                                         </div>
-                                    </label>
-                                    {% endfor %}
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
+                                    </p>
                                 </div>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Partial Matches Section -->
-                        {% if partial_matches %}
-                            <div class="mb-6">
-                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
-                                    <span class="match-score partial-match mr-2">Partial Matches</span>
-                                    <span class="text-sm text-gray-500">Available for part of the session time</span>
-                                </h4>
-                                
-                                <div class="space-y-3">
-                                    {% for evaluator in partial_matches %}
-                                    <label class="flex items-center p-4 border border-amber-200 dark:border-amber-900 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 cursor-pointer transition-colors">
-                                        <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
-                                               class="mr-3 h-5 w-5 text-primary">
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-center">
-                                                <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
-                                                <span class="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 px-2 py-1 rounded-full">
-                                                    {{ evaluator.overlap_minutes }} minutes overlap
-                                                </span>
-                                            </div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
-                                            </p>
-                                        </div>
-                                    </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Alternative Times Section -->
-                        {% if alternative_slots %}
-                            <div class="mb-6">
-                                <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
-                                    <span class="match-score alternative-match mr-2">Alternative Times</span>
-                                    <span class="text-sm text-gray-500">Available at different times</span>
-                                </h4>
-                                
-                                <div class="space-y-3">
-                                    {% for evaluator in alternative_slots %}
-                                    <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                                        <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
-                                               class="mr-3 h-5 w-5 text-primary">
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-center">
-                                                <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
-                                                <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
-                                                    {{ evaluator.time_difference }}
-                                                </span>
-                                            </div>
-                                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
-                                            </p>
-                                            <div class="mt-2">
-                                                <input type="hidden" id="alternative_time_{{ evaluator.id }}" name="session_time" value="{{ evaluator.available_from|date:'Y-m-d\TH:i' }}" disabled>
-                                                <script>
-                                                    document.querySelector('input[value="{{ evaluator.id }}"]').addEventListener('change', function() {
-                                                        document.getElementById('alternative_time_{{ evaluator.id }}').disabled = !this.checked;
-                                                    });
-                                                </script>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
-                        
-                        <div class="mt-6 flex justify-end space-x-4">
-                            <a href="{% url 'moderator' %}" class="btn-secondary px-6 py-2">Cancel</a>
-                            <button type="submit" class="btn-primary px-6 py-2">Confirm Assignment</button>
+                            </label>
+                            {% endfor %}
                         </div>
+                    </div>
                     {% endif %}
+                    
+                    {% if alternative_slots %}
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                            <span class="match-score alternative-match mr-2">Alternative Times</span>
+                        </h4>
+                        <div class="space-y-3">
+                            {% for evaluator in alternative_slots %}
+                            <label class="flex items-center p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                                <input type="radio" name="evaluator" value="{{ evaluator.id }}" required
+                                       data-type="alternative" class="mr-3 h-5 w-5 text-primary">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center">
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ evaluator.evaluator.get_full_name }}</p>
+                                        <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+                                            {{ evaluator.time_difference }}
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                        Available: {{ evaluator.available_from|date:"M d, H:i" }} - {{ evaluator.available_to|date:"H:i" }}
+                                    </p>
+                                    <div class="mt-2">
+                                        <input type="hidden" id="alternative_time_{{ evaluator.id }}" name="session_time" value="{{ evaluator.available_from|date:'Y-m-d\TH:i' }}" disabled>
+                                        <script>
+                                            document.querySelector('input[value="{{ evaluator.id }}"]').addEventListener('change', function() {
+                                                document.getElementById('alternative_time_{{ evaluator.id }}').disabled = !this.checked;
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <a href="{% url 'moderator' %}" class="btn-secondary px-6 py-2">Cancel</a>
+                        <button type="submit" class="btn-primary px-6 py-2">Confirm Assignment</button>
+                    </div>
+                {% endif %}
                 </form>
             </div>
         </main>
@@ -243,23 +213,16 @@
 </div>
 
 <script>
-    // Enable/disable alternative time inputs based on radio selection
-    document.addEventListener('DOMContentLoaded', function() {
-        const radioButtons = document.querySelectorAll('input[name="evaluator"]');
-        radioButtons.forEach(function(radio) {
-            radio.addEventListener('change', function() {
-                // First disable all alternative time inputs
-                document.querySelectorAll('input[name="session_time"]').forEach(function(input) {
-                    input.disabled = true;
-                });
-                
-                // Enable the one corresponding to the selected evaluator, if any
-                const altTimeInput = document.getElementById('alternative_time_' + this.value);
-                if (altTimeInput) {
-                    altTimeInput.disabled = false;
-                }
-            });
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const selectedType = document.querySelector('input[name="evaluator"]:checked').dataset.type;
+        if(selectedType === 'alternative') {
+            if(!confirm("This will send a time proposal to the participant. Continue?")) {
+                e.preventDefault();
+            }
+        }
     });
+});
 </script>
 {% endblock %}
