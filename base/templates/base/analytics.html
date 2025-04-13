@@ -1,5 +1,5 @@
 {% extends 'main.html' %}
-{% load static %} 
+{% load static %}
 {% block styles %}
 <link rel="stylesheet" href="{% static 'css/analytics.css' %}">
 {% endblock %}
@@ -16,7 +16,7 @@
     <div class="flex-1 flex flex-col">
         <!-- Header -->
         <header class="bg-secondarybg dark:bg-secondarydarkbg p-4 border-b border-lightborder dark:border-darkborder flex justify-between items-center">
-            <h1 class="text-xl font-semibold">My Progress</h1>
+            <h1 class="text-xl font-semibold">{{ selected_topic.title }} Analytics</h1>
             
             <!-- Dark mode toggle button -->
             <button onclick="document.documentElement.classList.toggle('dark')" 
@@ -32,22 +32,19 @@
 
         <!-- Progress Content -->
         <div class="flex-1 p-6 overflow-y-auto">
-            <!-- Term Selection Buttons -->
-            <div class="flex gap-4 mb-6">
-                <button id="t1Button" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                    T1
-                </button>
-                <button id="t2Button" class="px-6 py-2 bg-secondarybg dark:bg-secondarydarkbg text-darktext dark:text-lighttext border border-lightborder dark:border-darkborder rounded-lg hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
-                    T2
-                </button>
-                <button id="t3Button" class="px-6 py-2 bg-secondarybg dark:bg-secondarydarkbg text-darktext dark:text-lighttext border border-lightborder dark:border-darkborder rounded-lg hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg transition-colors">
-                    T3
-                </button>
+            <!-- Topic Selection Buttons -->
+            <div class="flex gap-4 mb-6 flex-wrap">
+                {% for topic in user_topics %}
+                <a href="?topic={{ topic.id }}" 
+                   class="px-6 py-2 rounded-lg transition-colors {% if topic.id == selected_topic.id %}bg-primary text-white hover:bg-indigo-700{% else %}bg-secondarybg dark:bg-secondarydarkbg text-darktext dark:text-lighttext border border-lightborder dark:border-darkborder hover:bg-tertiarybg dark:hover:bg-tertiarydarkbg{% endif %}">
+                    {{ topic.title }}
+                </a>
+                {% endfor %}
             </div>
 
             <!-- Performance Dashboard -->
             <div class="bg-secondarybg dark:bg-secondarydarkbg rounded-lg shadow-md p-6 border border-lightborder dark:border-darkborder">
-                <h2 class="text-xl font-semibold mb-6">T1 Performance</h2>
+                <h2 class="text-xl font-semibold mb-6">{{ selected_topic.title }} Performance</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Left Column - Stats -->
@@ -55,76 +52,109 @@
                         <!-- Sessions Attended -->
                         <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
                             <h3 class="font-medium mb-2">Sessions Attended</h3>
-                            <p class="text-2xl font-semibold text-primary">12</p>
+                            <p class="text-2xl font-semibold text-primary">{{ total_sessions }}</p>
                         </div>
 
                         <!-- Average Rating -->
                         <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
                             <h3 class="font-medium mb-2">Average Rating</h3>
-                            <p class="text-2xl font-semibold text-primary">4.5/5</p>
+                            <p class="text-2xl font-semibold text-primary">{{ average_rating|floatformat:1 }}/10</p>
                         </div>
 
                         <!-- Feedback -->
                         <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
-                            <h3 class="font-medium mb-2">Feedback</h3>
-                            <div class="space-y-2">
-                                <p class="text-sm text-secondarydark dark:text-secondarylight">
-                                    "Excellent progress in communication skills"
-                                </p>
-                                <p class="text-sm text-secondarydark dark:text-secondarylight">
-                                    "Shows great improvement in problem-solving"
-                                </p>
+                            <h3 class="font-medium mb-2">Latest Feedback</h3>
+                            <div class="space-y-3">
+                                {% for feedback in latest_feedback %}
+                                <div class="bg-secondarybg dark:bg-secondarydarkbg p-3 rounded border border-lightborder dark:border-darkborder">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-primary font-medium">★ {{ feedback.rating }}/10</span>
+                                        <span class="text-xs text-secondarydark dark:text-secondarylight">{{ feedback.submitted_at|date:"M d, Y" }}</span>
+                                    </div>
+                                    <p class="text-sm text-secondarydark dark:text-secondarylight">
+                                        "{{ feedback.comments|truncatechars:100 }}"
+                                    </p>
+                                </div>
+                                {% empty %}
+                                <p class="text-sm text-secondarydark dark:text-secondarylight">No feedback available yet</p>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
 
                     <!-- Right Column - Graph -->
-                    <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg flex items-center justify-center">
+                    <div class="bg-tertiarybg dark:bg-tertiarydarkbg p-4 rounded-lg">
                         <div class="w-full h-64">
-                            <!-- Placeholder for graph - You can add your preferred charting library here -->
-                            <div class="w-full h-full flex items-center justify-center text-secondarydark dark:text-secondarylight">
-                                Performance Graph
-                            </div>
+                            <canvas id="performanceChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Add this script at the end of your body tag -->
-        <script>
-            // Term button functionality
-            const termButtons = {
-                t1: document.getElementById('t1Button'),
-                t2: document.getElementById('t2Button'),
-                t3: document.getElementById('t3Button')
-            };
-
-            function setActiveTerm(activeTerm) {
-                // Reset all buttons
-                Object.values(termButtons).forEach(button => {
-                    button.classList.remove('bg-primary', 'text-white');
-                    button.classList.add('bg-secondarybg', 'dark:bg-secondarydarkbg', 'text-darktext', 'dark:text-lighttext');
-                });
-
-                // Set active button
-                termButtons[activeTerm].classList.remove('bg-secondarybg', 'dark:bg-secondarydarkbg', 'text-darktext', 'dark:text-lighttext');
-                termButtons[activeTerm].classList.add('bg-primary', 'text-white');
-            }
-
-            // Add click event listeners
-            Object.entries(termButtons).forEach(([term, button]) => {
-                button.addEventListener('click', () => {
-                    setActiveTerm(term);
-                    // Here you can add logic to load specific term data
-                });
-            });
-        </script>
     </div>
 </div>
 
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-    // Check for user's preferred color scheme
+    // Initialize the performance chart
+    const topicData = JSON.parse('{{ topic_averages|escapejs }}');
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    const performanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: topicData.labels,
+            datasets: [{
+                label: 'Average Rating',
+                data: topicData.data,
+                backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1,
+                        color: '#6B7280'
+                    },
+                    grid: {
+                        color: 'rgba(209, 213, 219, 0.3)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#6B7280'
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Rating: ${context.raw}/5`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Dark mode toggle functionality
     if (localStorage.getItem('darkMode') === 'true' || 
         (!localStorage.getItem('darkMode') && 
          window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -137,8 +167,25 @@
     document.querySelector('[onclick="document.documentElement.classList.toggle(\'dark\')"]')
         .addEventListener('click', function() {
             localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+            updateChartColors();
         });
-    
+
+    // Update chart colors based on dark mode
+    function updateChartColors() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const textColor = isDark ? '#E5E7EB' : '#4B5563';
+        const gridColor = isDark ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.3)';
+        
+        performanceChart.options.scales.x.ticks.color = textColor;
+        performanceChart.options.scales.y.ticks.color = textColor;
+        performanceChart.options.scales.y.grid.color = gridColor;
+        performanceChart.update();
+    }
+
+    // Initial color setup
+    updateChartColors();
+
+    // Loader functionality
     window.addEventListener('load', function() {
         const loader = document.getElementById('loader');
         loader.classList.add('loader-hidden');

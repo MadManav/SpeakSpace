@@ -1,0 +1,55 @@
+<!-- Sidebar / Navbar -->
+<div class="sidebar bg-white dark:bg-gray-800 w-64 shadow-md flex flex-col transition-colors duration-200">
+    <!-- Profile Section -->
+    <div class="flex flex-col items-center justify-center p-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="profile-container relative">
+            <div class="h-24 w-24 rounded-full overflow-hidden mb-4 border-2 border-primary">
+                <img id="profile-image" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile" class="h-full w-full object-cover">
+                <div class="profile-upload-overlay">
+                    <label for="profile-upload" class="cursor-pointer">
+                        <i class="fas fa-camera mr-1"></i> Edit
+                    </label>
+                    <input type="file" id="profile-upload" class="hidden" accept="image/*">
+                </div>
+            </div>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Moderator Name</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Moderator</p>
+    </div>
+    
+    <!-- Navigation Links -->
+    <div class="flex-1 overflow-y-auto py-4 px-3">
+        <ul class="space-y-3">
+            <li>
+                <button id="create-session-btn" class="w-full flex items-center p-3 text-base font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <span class="ml-3">Create Session</span>
+                </button>
+            </li>
+            <li>
+                <button id="create-session-btn" class="w-full flex items-center p-3 text-base font-medium text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <span class="ml-3">Manage Topics</span>
+                </button>
+            </li>
+            <li>
+                <button id="logout-btn" onclick="window.location.href='{% url 'logout' %}';" class="w-full flex items-center p-3 text-base font-medium text-red-400 rounded-lg border border-gray-600 hover:bg-gray-700 transition-all duration-200">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <span class="ml-3">Logout</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>

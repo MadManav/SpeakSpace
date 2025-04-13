@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import User, Session, Topic, SessionParticipant, InterviewRequest, EvaluatorAvailability, ChatRoom, ChatMessage
+from .models import User, Session, Topic, SessionParticipant, InterviewRequest, EvaluatorAvailability, ChatRoom, ChatMessage,Feedback
 from django.utils import timezone
 from django.db.models import Avg
 from django.http import JsonResponse
@@ -15,11 +15,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods  # Add this import
 from django.shortcuts import render, redirect, get_object_or_404  # Add get_object_or_404
-# ... rest of your imports ...
 from django.views.generic import TemplateView
 from django.views.decorators.http import require_POST
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db import models
+
 
 def loginPage(request):
     # if request.user.is_authenticated:
@@ -101,15 +102,19 @@ def homePage(request):
         participants__user=request.user
     ).select_related('topic', 'selector')
     
-    # Get confirmed sessions (accepted proposals)
+    # Get confirmed sessions (both explicitly confirmed and perfect assignments)
     confirmed_sessions = Session.objects.filter(
-        status='confirmed',
         participants__user=request.user
+    ).filter(
+        # Either confirmed status OR perfect match type with scheduled status
+        models.Q(status='confirmed') | 
+        models.Q(status='scheduled', assignment_type='perfect')
     ).select_related('topic', 'selector')
     
-    # Get scheduled upcoming sessions
+    # Get other scheduled upcoming sessions that aren't perfect matches
     upcoming_sessions = Session.objects.filter(
         status='scheduled',
+        assignment_type='alternative',  # Only alternative assignments
         participants__user=request.user,
         start_time__gte=timezone.now()
     ).order_by('start_time').select_related('topic', 'selector')
@@ -132,44 +137,71 @@ def homePage(request):
 
 @login_required(login_url='login')
 def analyticsPage(request):
-    # Get user's sessions with ratings
-    user_sessions = Session.objects.filter(
-        participants__user=request.user,
-        status='completed'
-    ).select_related('topic').order_by('-start_time')
-
-    # Calculate subject-wise ratings
-    subject_ratings = {}
-    for session in user_sessions:
-        topic = session.topic.title
-        if topic not in subject_ratings:
-            subject_ratings[topic] = {
-                'total_rating': 0,
-                'count': 0,
-                'sessions': []
-            }
-        subject_ratings[topic]['total_rating'] += session.rating or 0
-        subject_ratings[topic]['count'] += 1
-        if len(subject_ratings[topic]['sessions']) < 5:  # Keep only last 5 sessions
-            subject_ratings[topic]['sessions'].append({
-                'date': session.start_time,
-                'rating': session.rating or 0
-            })
-
-    # Calculate averages and prepare graph data
-    analytics_data = {}
-    for topic, data in subject_ratings.items():
-        avg_rating = data['total_rating'] / data['count'] if data['count'] > 0 else 0
-        analytics_data[topic] = {
-            'average_rating': round(avg_rating, 1),
-            'total_sessions': data['count'],
-            'last_five_sessions': list(reversed(data['sessions']))  # Most recent first
+    # Get all topics for the user
+    user_topics = Topic.objects.filter(
+        session__participants__user=request.user
+    ).distinct()
+    
+    # Get selected topic or first one
+    selected_topic_id = request.GET.get('topic')
+    selected_topic = get_object_or_404(Topic, id=selected_topic_id) if selected_topic_id else user_topics.first()
+    
+    if not selected_topic:
+        context = {
+            'user_topics': [],
+            'selected_topic': None,
+            'average_rating': 0,
+            'total_sessions': 0,
+            'latest_feedback': [],
+            'topic_averages': json.dumps({'labels': [], 'data': []}),
+            'user': request.user
         }
+        return render(request, 'base/analytics.html', context)
+
+    # Get total sessions (including those without feedback)
+    total_sessions = SessionParticipant.objects.filter(
+        user=request.user,
+        session__topic=selected_topic
+    ).count()
+
+    # Get all feedback for the user
+    feedback_list = Feedback.objects.filter(
+        participant=request.user,
+        session__topic=selected_topic
+    ).select_related('session').order_by('-submitted_at')
+
+    # Calculate average rating
+    average_rating = feedback_list.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    # Get latest feedback
+    latest_feedback = feedback_list[:2]
+
+    # Prepare topic averages for chart
+    topic_averages = []
+    for topic in user_topics:
+        topic_feedback = Feedback.objects.filter(
+            participant=request.user,
+            session__topic=topic
+        ).aggregate(avg_rating=Avg('rating'))
+        
+        topic_averages.append({
+            'title': topic.title,
+            'avg_rating': topic_feedback['avg_rating'] or 0
+        })
 
     context = {
-        'analytics_data': analytics_data,
-        'user': request.user,
+        'user_topics': user_topics,
+        'selected_topic': selected_topic,
+        'average_rating': round(average_rating, 1),
+        'total_sessions': total_sessions,
+        'latest_feedback': latest_feedback,
+        'topic_averages': json.dumps({
+            'labels': [t['title'] for t in topic_averages],
+            'data': [t['avg_rating'] for t in topic_averages]
+        }),
+        'user': request.user
     }
+    
     return render(request, 'base/analytics.html', context)
 
 @login_required(login_url='login')
@@ -624,3 +656,62 @@ def decline_session(request, session_id):
         messages.info(request, 'Session declined')
     
     return redirect('home')
+
+@csrf_exempt
+@login_required
+def submit_feedback(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            session_id = data.get('session_id')
+            rating = data.get('rating')
+            comments = data.get('comments', '')
+            
+            session = get_object_or_404(Session, id=session_id)
+            
+            # Check if the current user is the evaluator for this session
+            if request.user != session.selector:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'You are not authorized to provide feedback for this session.'
+                }, status=403)
+            
+            # Get the participant
+            participant = SessionParticipant.objects.filter(session=session).first()
+            if not participant:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No participant found for this session.'
+                }, status=404)
+            
+            # Create or update feedback
+            feedback, created = Feedback.objects.update_or_create(
+                session=session,
+                evaluator=request.user,
+                participant=participant.user,
+                defaults={
+                    'rating': rating,
+                    'comments': comments
+                }
+            )
+            
+            # Update session status
+            session.status = 'completed'
+            session.save()
+            
+            # Update participant's performance analytics
+            analytics, _ = PerformanceAnalytics.objects.get_or_create(user=participant.user)
+            
+            # Calculate new average
+            all_ratings = Feedback.objects.filter(participant=participant.user).values_list('rating', flat=True)
+            analytics.average_rating = sum(all_ratings) / len(all_ratings) if all_ratings else 0
+            analytics.sessions_participated += 1 if created else 0
+            analytics.last_feedback_date = timezone.now()
+            analytics.save()
+            
+            return JsonResponse({'success': True})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)

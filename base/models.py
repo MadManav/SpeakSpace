@@ -252,6 +252,13 @@ class Feedback(models.Model):
     comments = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
+    # ... existing fields ...
+    
+    def get_truncated_comment(self, length=50):
+        if len(self.comments) > length:
+            return self.comments[:length] + '...'
+        return self.comments
+
 # ----------------------
 # Aggregated Performance Analytics
 # ----------------------

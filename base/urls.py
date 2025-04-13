@@ -30,4 +30,5 @@ urlpatterns = [
     path('test_jitsi/', views.test_jitsi, name='test_jitsi'),
     path('sessions/<int:session_id>/confirm/', views.confirm_session, name='confirm_session'),
     path('sessions/<int:session_id>/decline/', views.decline_session, name='decline_session'),
+    path('submit-feedback/', views.submit_feedback, name='submit-feedback'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

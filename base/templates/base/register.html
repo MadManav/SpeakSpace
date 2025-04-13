@@ -1,129 +1,400 @@
-{% extends 'main.html' %}
-{% load static %} 
-{% block styles %}
-{% endblock %}
-{% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-md">
-        <div class="bg-white/95 dark:bg-gray-800/90 backdrop-blur-lg rounded-2xl p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
-            <div class="text-center mb-8">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="mb-4 p-4 rounded-md {% if message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <h1 class="text-3xl font-semibold text-blue-600 dark:text-blue-400">SpeakSpace</h1>
-                <p class="text-gray-600 dark:text-gray-300 mt-2">Create Account</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Please fill in your details</p>
-            </div>
-            
-            <form method="POST" action="" class="space-y-6">
-                {% csrf_token %}
-                <div class="relative">
-                    <input type="text" id="firstName" name="firstName"
-                           class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
-                           required />
-                    <label for="firstName" 
-                           class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm">
-                        First Name
-                    </label>
-                </div>
+{% extends 'main.html' %} {% load static %} {% block styles %}
+<style>
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 
-                <div class="relative">
-                    <input type="text" id="lastName" name="lastName"
-                           class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
-                           required />
-                    <label for="lastName" 
-                           class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm">
-                        Last Name
-                    </label>
-                </div>
+  @keyframes floatIn {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 
-                <div class="relative">
-                    <input type="text" id="username" name="username"
-                           class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
-                           required />
-                    <label for="username" 
-                           class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm">
-                        Username
-                    </label>
-                </div>
+  /* Enhanced glow effects */
+  .glow-effect {
+    position: relative;
+    z-index: 1;
+  }
 
-                <div class="relative">
-                    <input type="email" id="email" name="email"
-                           class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
-                           required />
-                    <label for="email" 
-                           class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm">
-                        Email
-                    </label>
-                </div>
+  .glow-effect:hover::before {
+    opacity: 0.6;
+    animation: subtlePulsateGlow 2.5s infinite;
+  }
 
-                <div class="relative">
-                    <select id="userRole" name="userRole"
-                            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400 appearance-none cursor-pointer"
-                            required>
-                        <option value="participant" class="bg-white dark:bg-gray-800" selected>Participant</option>
-                        <option value="moderator" class="bg-white dark:bg-gray-800">Moderator</option>
-                        <option value="evaluator" class="bg-white dark:bg-gray-800">Evaluator</option>
-                    </select>
-                    <label for="userRole" 
-                           class="absolute left-0 -top-2 text-sm text-gray-500 dark:text-gray-400">
-                        Select Role
-                    </label>
-                </div>
+  .glow-effect::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(
+      45deg,
+      rgba(59, 130, 246, 0.6),
+      rgba(37, 99, 235, 0.5),
+      rgba(29, 78, 216, 0.6)
+    );
+    z-index: -1;
+    filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+  }
 
-                <div class="relative">
-                    <input type="password" id="password" name="password"
-                           class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
-                           required />
-                    <label for="password" 
-                           class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm">
-                        Password
-                    </label>
-                </div>
+  @keyframes subtlePulsateGlow {
+    0% {
+      filter: blur(8px) brightness(1);
+    }
+    50% {
+      filter: blur(8px) brightness(1.15);
+    }
+    100% {
+      filter: blur(8px) brightness(1);
+    }
+  }
 
-                <div class="relative">
-                    <input type="password" id="confirmPassword" name="confirmPassword"
-                           class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
-                           required />
-                    <label for="confirmPassword" 
-                           class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm">
-                        Confirm Password
-                    </label>
-                </div>
+  /* Card animation */
+  .register-card {
+    animation: floatIn 0.6s ease-out;
+    transition: all 0.3s ease;
+  }
 
-                <button type="submit" 
-                        class="w-full bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-full py-3 px-6 text-lg font-medium transition-all active:scale-95 hover:shadow-lg">
-                    Sign Up
-                </button>
+  .register-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1);
+  }
 
-                <div class="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <p class="text-gray-600 dark:text-gray-300">Already have an account? 
-                        <a href="{% url 'login' %}" class="text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 px-2 py-1 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
-                            Login
-                        </a>
-                    </p>
-                </div>
-            </form>
+  /* Input animations */
+  .input-focus-animation {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .input-focus-animation::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(to right, #3b82f6, #6366f1);
+    transition: width 0.3s ease;
+  }
+
+  .input-focus-animation:focus-within::after {
+    width: 100%;
+  }
+
+  /* Button animation */
+  .btn-animate {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .btn-animate:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-animate::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.7s ease;
+  }
+
+  .btn-animate:hover::before {
+    left: 100%;
+  }
+
+  /* Input movement */
+  .input-group {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.5s forwards;
+  }
+
+  .input-group:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .input-group:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .input-group:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .input-group:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  .input-group:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+  .input-group:nth-child(6) {
+    animation-delay: 0.6s;
+  }
+  .input-group:nth-child(7) {
+    animation-delay: 0.7s;
+  }
+
+  /* Logo animation */
+  .logo-pulse {
+    animation: pulseSlow 3s infinite alternate;
+  }
+
+  @keyframes pulseSlow {
+    0% {
+      opacity: 0.9;
+      text-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    }
+    100% {
+      opacity: 1;
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div
+  class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 transition-all duration-500"
+>
+  <div class="w-full max-w-md">
+    <div
+      class="register-card bg-white/95 dark:bg-gray-800/90 backdrop-blur-lg rounded-2xl p-8 shadow-xl transition-all duration-300"
+    >
+      <div class="text-center mb-8">
+        {% if messages %} {% for message in messages %}
+        <div
+          class="mb-4 p-4 rounded-md {% if message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200{% endif %}"
+        >
+          {{ message }}
         </div>
+        {% endfor %} {% endif %}
+        <h1
+          class="text-3xl font-semibold text-blue-600 dark:text-blue-400 logo-pulse"
+        >
+          SpeakSpace
+        </h1>
+        <p
+          class="text-gray-600 dark:text-gray-300 mt-2"
+          style="animation: fadeIn 0.8s ease-out 0.2s both"
+        >
+          Create Account
+        </p>
+        <p
+          class="text-sm text-gray-500 dark:text-gray-400"
+          style="animation: fadeIn 0.8s ease-out 0.3s both"
+        >
+          Please fill in your details
+        </p>
+      </div>
+
+      <form method="POST" action="" class="space-y-6">
+        {% csrf_token %}
+        <div class="relative input-group input-focus-animation">
+          <input
+            type="text"
+            id="firstName"
+            name="firstName"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
+            required
+          />
+          <label
+            for="firstName"
+            class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm"
+          >
+            First Name
+          </label>
+        </div>
+
+        <div class="relative input-group input-focus-animation">
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
+            required
+          />
+          <label
+            for="lastName"
+            class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm"
+          >
+            Last Name
+          </label>
+        </div>
+
+        <div class="relative input-group input-focus-animation">
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
+            required
+          />
+          <label
+            for="username"
+            class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm"
+          >
+            Username
+          </label>
+        </div>
+
+        <div class="relative input-group input-focus-animation">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
+            required
+          />
+          <label
+            for="email"
+            class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm"
+          >
+            Email
+          </label>
+        </div>
+
+        <div class="relative input-group input-focus-animation">
+          <select
+            id="userRole"
+            name="userRole"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400 appearance-none cursor-pointer"
+            required
+          >
+            <option
+              value="participant"
+              class="bg-white dark:bg-gray-800"
+              selected
+            >
+              Participant
+            </option>
+            <option value="moderator" class="bg-white dark:bg-gray-800">
+              Moderator
+            </option>
+            <option value="evaluator" class="bg-white dark:bg-gray-800">
+              Evaluator
+            </option>
+          </select>
+          <label
+            for="userRole"
+            class="absolute mt-2 mb-2 left-0 -top-2 text-sm text-gray-500 dark:text-gray-400"
+          >
+            Select Role
+          </label>
+        </div>
+
+        <div class="relative input-group input-focus-animation">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
+            required
+          />
+          <label
+            for="password"
+            class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm"
+          >
+            Password
+          </label>
+        </div>
+
+        <div class="relative input-group input-focus-animation">
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            class="peer w-full border-b-2 border-gray-300 dark:border-gray-600 bg-transparent pt-4 pb-1.5 text-gray-900 dark:text-white outline-none transition-all focus:border-blue-600 dark:focus:border-blue-400"
+            required
+          />
+          <label
+            for="confirmPassword"
+            class="absolute left-0 top-4 text-gray-500 dark:text-gray-400 transition-all peer-focus:-top-2 peer-focus:text-sm peer-focus:text-blue-600 dark:peer-focus:text-blue-400 peer-valid:-top-2 peer-valid:text-sm"
+          >
+            Confirm Password
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="btn-animate glow-effect w-full bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-full py-3 px-6 text-lg font-medium transition-all active:scale-95 hover:shadow-lg"
+          style="animation: fadeIn 0.8s ease-out 0.8s both"
+        >
+          Sign Up
+        </button>
+
+        <div
+          class="text-center pt-4 border-t border-gray-200 dark:border-gray-700"
+          style="animation: fadeIn 0.8s ease-out 0.9s both"
+        >
+          <p class="text-gray-600 dark:text-gray-300">
+            Already have an account?
+            <a
+              href="{% url 'login' %}"
+              class="text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 px-2 py-1 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+            >
+              Login
+            </a>
+          </p>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Dark mode toggle button -->
-    <button onclick="document.documentElement.classList.toggle('dark')" 
-            class="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all hover:scale-110">
-        <svg class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-    </button>
+  <!-- Dark mode toggle button -->
+  <button
+    onclick="document.documentElement.classList.toggle('dark')"
+    class="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all hover:scale-110 glow-effect"
+  >
+    <svg
+      class="w-6 h-6 hidden dark:block"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+      />
+    </svg>
+    <svg
+      class="w-6 h-6 block dark:hidden"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+      />
+    </svg>
+  </button>
 </div>
-{% endblock content %}
-
-{% block scripts %}
+{% endblock content %} {% block scripts %}
 <script src="{% static 'js/register.js' %}"></script>
 {% endblock %}

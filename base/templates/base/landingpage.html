@@ -1,75 +1,296 @@
-{% extends 'main.html' %}
-{% load static %} 
-{% block styles %}
-<link rel="stylesheet" href="{% static 'css/landingstyles.css' %}"/>
-{% endblock %}
-{% block content %}
-<nav class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-all duration-300">
+{% extends 'main.html' %} {% load static %} {% block styles %}
+<link rel="stylesheet" href="{% static 'css/landingstyles.css' %}" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
+<style>
+  /* Glow effects */
+  .glow-effect {
+    position: relative;
+    z-index: 1;
+  }
+
+  .glow-effect:hover::before {
+    opacity: 0.6;
+    animation: subtlePulsateGlow 2.5s infinite;
+  }
+
+  .glow-effect::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(
+      45deg,
+      rgba(99, 102, 241, 0.6),
+      rgba(139, 92, 246, 0.5),
+      rgba(236, 72, 153, 0.6)
+    );
+    z-index: -1;
+    filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+  }
+
+  @keyframes subtlePulsateGlow {
+    0% {
+      filter: blur(8px) brightness(1);
+    }
+    50% {
+      filter: blur(8px) brightness(1.15);
+    }
+    100% {
+      filter: blur(8px) brightness(1);
+    }
+  }
+
+  /* Button specific glow effects - more vibrant */
+  .btn-primary.glow-effect::before {
+    background: linear-gradient(
+      45deg,
+      rgba(99, 102, 241, 0.7),
+      rgba(139, 92, 246, 0.6),
+      rgba(79, 70, 229, 0.7)
+    );
+  }
+
+  .btn-primary.glow-effect:hover::before {
+    opacity: 0.7;
+  }
+
+  /* Card specific glow effects - more subtle */
+  .feature-card.glow-effect::before {
+    filter: blur(12px);
+    opacity: 0;
+  }
+
+  .feature-card.glow-effect:hover::before {
+    opacity: 0.4;
+    animation: none;
+  }
+
+  /* Testimonial card glow */
+  .testimonial-card.glow-effect::before {
+    background: linear-gradient(
+      45deg,
+      rgba(124, 58, 237, 0.5),
+      rgba(139, 92, 246, 0.4),
+      rgba(196, 181, 253, 0.5)
+    );
+    filter: blur(10px);
+  }
+
+  /* More subtle hover transform */
+  .hover-lift {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-5px);
+  }
+</style>
+{% endblock %} {% block content %}
+<nav
+  class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50 transition-all duration-300"
+>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="flex-shrink-0 flex items-center">
-                    <button id="logoButton" class="text-2xl font-bold text-primary">
+          <button
+            id="logoButton"
+            class="text-2xl font-bold text-primary hover-lift"
+          >
                         <i class="fas fa-comments mr-2"></i>SpeakSpace
                     </button>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <a href="#features" class="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+          <a
+            href="#features"
+            class="scroll-link border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200"
+          >
                         Features
                     </a>
-                    <a href="#how-it-works" class="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+          <a
+            href="#how-it-works"
+            class="scroll-link border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200"
+          >
                         How It Works
                     </a>
-                    <a href="#testimonials" class="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200">
+          <a
+            href="#testimonials"
+            class="scroll-link border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200"
+          >
                         Testimonials
                     </a>
                 </div>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                <button id="darkModeToggle" type="button" class="bg-white dark:bg-gray-800 p-1 rounded-full text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-                    <span class="sr-only">Toggle dark mode</span>
-                    <i class="fas fa-moon dark:hidden"></i>
-                    <i class="fas fa-sun hidden dark:inline-block"></i>
+        <button
+          id="darkModeToggle"
+          class="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all hover:scale-110 hover:rotate-12 focus:outline-none glow-effect"
+        >
+          <svg
+            class="w-6 h-6 hidden dark:block"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+            />
+          </svg>
+          <svg
+            class="w-6 h-6 block dark:hidden"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+            />
+          </svg>
                 </button>
                 <div class="ml-3 relative">
-                    <a href="{% url 'login' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+          <a
+            href="{% url 'login' %}"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 glow-effect btn-primary"
+          >
                         Sign In
                     </a>
                 </div>
             </div>
             <div class="-mr-2 flex items-center sm:hidden">
-                <button type="button" class="bg-white dark:bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200" aria-expanded="false">
+        <button
+          id="mobileMenuBtn"
+          type="button"
+          class="bg-white dark:bg-gray-800 inline-flex items-center justify-center p-3 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200"
+          aria-expanded="false"
+        >
                     <span class="sr-only">Open main menu</span>
-                    <i class="fas fa-bars"></i>
+          <i class="fas fa-bars text-xl" id="menuOpenIcon"></i>
+          <i class="fas fa-times text-xl hidden" id="menuCloseIcon"></i>
                 </button>
             </div>
         </div>
+
+    <!-- Mobile menu, show/hide based on menu state -->
+    <div id="mobileMenu" class="hidden sm:hidden">
+      <div class="pt-2 pb-3 space-y-1">
+        <a
+          href="#features"
+          class="scroll-link block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-800 transition-colors duration-200"
+        >
+          Features
+        </a>
+        <a
+          href="#how-it-works"
+          class="scroll-link block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-800 transition-colors duration-200"
+        >
+          How It Works
+        </a>
+        <a
+          href="#testimonials"
+          class="scroll-link block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 hover:text-gray-800 transition-colors duration-200"
+        >
+          Testimonials
+        </a>
+      </div>
+      <div class="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex items-center px-4">
+          <button
+            id="mobileDarkModeToggle"
+            class="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-all hover:scale-110 hover:rotate-12 focus:outline-none glow-effect"
+          >
+            <svg
+              class="w-6 h-6 hidden dark:block"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            <svg
+              class="w-6 h-6 block dark:hidden"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          </button>
+          <a
+            href="{% url 'login' %}"
+            class="flex-grow flex justify-center items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 glow-effect btn-primary"
+          >
+            Sign In
+          </a>
+        </div>
+      </div>
+    </div>
     </div>
 </nav>
 
 <!-- Hero Section -->
-<div class="relative bg-white dark:bg-gray-800 overflow-hidden transition-colors duration-200">
+<div
+  class="relative bg-white dark:bg-gray-800 overflow-hidden transition-colors duration-200"
+>
     <div class="max-w-7xl mx-auto lg:grid lg:grid-cols-12 lg:gap-8">
-      
       <!-- Text content -->
-      <div class="relative z-10 lg:col-span-5 px-4 sm:px-6 lg:px-8 flex flex-col justify-center py-16 lg:py-32 animate-slide-right delay-100">
+    <div
+      class="relative z-10 lg:col-span-5 px-4 sm:px-6 lg:px-8 flex flex-col justify-center py-16 lg:py-32 animate-slide-right delay-100"
+    >
         <main>
           <div class="sm:text-center lg:text-left">
-            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+          <h1
+            class="text-6xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl"
+          >
               <span class="block">Master Your</span>
               <span class="block text-indigo-500">Interview Skills</span>
             </h1>
-            <p class="mt-4 text-base text-gray-600 dark:text-gray-300 sm:mt-6 sm:text-lg sm:max-w-xl sm:mx-auto lg:mx-0 animate-slide-right delay-200">
-              A real-time collaborative platform designed for students and job seekers to enhance their group discussion and interview skills through simulated scenarios and actionable feedback.
-            </p>
-            <div class="mt-6 sm:mt-8 sm:flex sm:justify-center lg:justify-start animate-slide-right delay-300">
+          <p
+            class="mt-4 text-base text-gray-600 dark:text-gray-300 sm:mt-6 sm:text-lg sm:max-w-xl sm:mx-auto lg:mx-0 animate-slide-right delay-200 lg:text-2xl"
+          >
+            A real-time collaborative platform designed for students and job
+            seekers to enhance their group discussion and interview skills
+            through simulated scenarios and actionable feedback.
+          </p>
+          <div
+            class="mt-6 sm:mt-8 sm:flex sm:justify-center lg:justify-start animate-slide-right delay-300"
+          >
               <div class="rounded-md shadow">
-                <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
+              <a
+                href="#"
+                class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 glow-effect btn-primary"
+              >
                   Get Started
                 </a>
               </div>
               <div class="mt-3 sm:mt-0 sm:ml-3">
-                <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
+              <a
+                href="#"
+                class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 glow-effect"
+              >
                   Learn More
                 </a>
               </div>
@@ -79,26 +300,46 @@
       </div>
   
       <!-- Image -->
-      <div class="lg:col-span-7 relative mt-8 lg:mt-0 animate-slide-left delay-200">
-        <img
-          class="absolute top-8 right-0 w-full h-[400px] lg:h-[600px] object-cover shadow-xl rounded-lg lg:rounded-l-lg lg:rounded-r-none"
-          src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
-          alt="People in a meeting"
-        />
-      </div>
+    <div
+      class="lg:col-span-7 relative mt-14 lg:mt-32 lg:ml-32 px-4 sm:px-6 lg:px-0 animate-slide-left delay-200"
+    >
+      <script
+        src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+        type="module"
+      ></script>
+      <dotlottie-player
+        src="https://lottie.host/311c5e8f-df30-4f04-8226-53445fa04156/g8SqYZKGbP.lottie"
+        background="transparent"
+        speed="1"
+        style="width: 100%; height: auto; max-width: 600px; margin: 0 auto"
+        loop
+        autoplay
+      >
+      </dotlottie-player>
+    </div>
     </div>
 </div>
 
 <!-- Features Section -->
-<div id="features" class="py-12 bg-white dark:bg-gray-800 transition-colors duration-200">
+<div
+  id="features"
+  class="py-12 bg-white dark:bg-gray-800 transition-colors duration-200"
+>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="lg:text-center animate-slide-up">
-            <h2 class="text-base text-primary font-semibold tracking-wide uppercase">Features</h2>
-            <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl transition-colors duration-200">
+      <h2 class="text-base text-primary font-semibold tracking-wide uppercase">
+        Features
+      </h2>
+      <p
+        class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl transition-colors duration-200"
+      >
                 Everything you need to succeed
             </p>
-            <p class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto transition-colors duration-200">
-                SpeakSpace provides all the tools you need to practice and improve your group discussion and interview skills.
+      <p
+        class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto transition-colors duration-200"
+      >
+        SpeakSpace provides all the tools you need to practice and improve your
+        group discussion and interview skills.
             </p>
         </div>
 
@@ -106,13 +347,22 @@
         <div class="mt-10 flex justify-center animate-slide-up delay-100">
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <nav class="-mb-px flex space-x-8">
-                    <button class="feature-tab border-primary text-primary whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="tab-1">
+          <button
+            class="feature-tab border-primary text-primary whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+            data-tab="tab-1"
+          >
                         Real-time Collaboration
                     </button>
-                    <button class="feature-tab border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="tab-2">
+          <button
+            class="feature-tab border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+            data-tab="tab-2"
+          >
                         AI-Powered Feedback
                     </button>
-                    <button class="feature-tab border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="tab-3">
+          <button
+            class="feature-tab border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+            data-tab="tab-3"
+          >
                         Skill Analytics
                     </button>
                 </nav>
@@ -125,126 +375,847 @@
             <div id="tab-1" class="feature-content">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Feature Card 1 -->
-                    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105">
-                        <div class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4">
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
                             <i class="fas fa-users text-white text-xl"></i>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Virtual Group Discussions</h3>
-                        <p class="text-gray-600 dark:text-gray-300">Participate in realistic group discussions with peers from around the world on various topics.</p>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Virtual Group Discussions
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Participate in realistic group discussions with peers from around
+              the world on various topics.
+            </p>
                     </div>
                     
                     <!-- Feature Card 2 -->
-                    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105">
-                        <div class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4">
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
                             <i class="fas fa-video text-white text-xl"></i>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Mock Interviews</h3>
-                        <p class="text-gray-600 dark:text-gray-300">Practice one-on-one interviews with AI interviewers or schedule sessions with real professionals.</p>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Mock Interviews
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Practice one-on-one interviews with AI interviewers or schedule
+              sessions with real professionals.
+            </p>
                     </div>
                     
                     <!-- Feature Card 3 -->
-                    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105">
-                        <div class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4">
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
                             <i class="fas fa-comments text-white text-xl"></i>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Real-time Feedback</h3>
-                        <p class="text-gray-600 dark:text-gray-300">Get instant feedback on your communication skills, body language, and content quality during practice sessions.</p>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Real-time Feedback
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Get instant feedback on your communication skills, body language,
+              and content quality during practice sessions.
+            </p>
                     </div>
                 </div>
             </div>
             
-            <!-- Tab 2 Content (hidden by default) -->
+      <!-- Tab 2 Content -->
             <div id="tab-2" class="feature-content hidden">
-                <!-- AI-Powered Feedback content -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Feature Card 1 -->
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
+              <i class="fas fa-brain text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Speech Analysis
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              AI-powered analysis of your speech patterns, pacing, clarity, and
+              vocabulary usage.
+            </p>
+          </div>
+
+          <!-- Feature Card 2 -->
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
+              <i class="fas fa-chart-line text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Performance Metrics
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Detailed metrics on your participation, contribution quality, and
+              engagement level.
+            </p>
+          </div>
+
+          <!-- Feature Card 3 -->
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
+              <i class="fas fa-lightbulb text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Personalized Tips
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Receive customized improvement suggestions based on your specific
+              communication patterns.
+            </p>
+          </div>
+        </div>
             </div>
             
-            <!-- Tab 3 Content (hidden by default) -->
+      <!-- Tab 3 Content -->
             <div id="tab-3" class="feature-content hidden">
-                <!-- Skill Analytics content -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Feature Card 1 -->
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
+              <i class="fas fa-chart-bar text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Progress Tracking
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Monitor your improvement over time with detailed analytics and
+              performance history.
+            </p>
+          </div>
+
+          <!-- Feature Card 2 -->
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
+              <i class="fas fa-trophy text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Skill Benchmarking
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Compare your performance with peers and industry standards to
+              identify areas for growth.
+            </p>
+          </div>
+
+          <!-- Feature Card 3 -->
+          <div
+            class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+          >
+            <div
+              class="h-12 w-12 rounded-md bg-indigo-500 flex items-center justify-center mb-4"
+            >
+              <i class="fas fa-graduation-cap text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Learning Path
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              Personalized learning recommendations based on your skill gaps and
+              career goals.
+            </p>
+          </div>
+        </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- How It Works Section -->
-<div id="how-it-works" class="bg-gray-50 dark:bg-gray-700 py-12 transition-colors duration-200">
-    <!-- How It Works content -->
+<div
+  id="how-it-works"
+  class="py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="lg:text-center">
+      <h2 class="text-base text-primary font-semibold tracking-wide uppercase">
+        How It Works
+      </h2>
+      <p
+        class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl transition-colors duration-200"
+      >
+        Simple steps to improve your skills
+      </p>
+      <p
+        class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto transition-colors duration-200"
+      >
+        Our platform makes it easy to practice and enhance your interview and
+        group discussion skills.
+      </p>
+    </div>
+
+    <div class="mt-16">
+      <div class="space-y-12 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-x-8">
+        <!-- Step 1 -->
+        <div
+          class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+        >
+          <div
+            class="h-12 w-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mb-4"
+          >
+            <span class="text-2xl font-bold text-primary">1</span>
+          </div>
+          <h3
+            class="text-lg font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200"
+          >
+            Create an Account
+          </h3>
+          <p
+            class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+          >
+            Sign up for a free account to access our platform's basic features.
+            Upgrade to premium for advanced analytics and unlimited practice
+            sessions.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div
+          class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+        >
+          <div
+            class="h-12 w-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mb-4"
+          >
+            <span class="text-2xl font-bold text-primary">2</span>
+          </div>
+          <h3
+            class="text-lg font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200"
+          >
+            Join or Create Sessions
+          </h3>
+          <p
+            class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+          >
+            Browse upcoming group discussions or mock interviews. Join existing
+            sessions or create your own with custom topics and parameters.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div
+          class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg transform hover:scale-105 glow-effect feature-card"
+        >
+          <div
+            class="h-12 w-12 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mb-4"
+          >
+            <span class="text-2xl font-bold text-primary">3</span>
+          </div>
+          <h3
+            class="text-lg font-medium text-gray-900 dark:text-white mb-2 transition-colors duration-200"
+          >
+            Practice & Get Feedback
+          </h3>
+          <p
+            class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+          >
+            Participate in real-time sessions, receive AI-powered feedback, and
+            track your progress with detailed analytics and personalized
+            recommendations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Testimonials Section -->
-<div id="testimonials" class="bg-white dark:bg-gray-800 py-12 transition-colors duration-200">
-    <!-- Testimonials content -->
+<div
+  id="testimonials"
+  class="bg-white dark:bg-gray-800 py-12 transition-colors duration-200"
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="lg:text-center">
+      <h2 class="text-base text-primary font-semibold tracking-wide uppercase">
+        Testimonials
+      </h2>
+      <p
+        class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl transition-colors duration-200"
+      >
+        What our users say
+      </p>
+      <p
+        class="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-300 lg:mx-auto transition-colors duration-200"
+      >
+        Hear from students and professionals who have improved their skills with
+        SpeakSpace.
+      </p>
+    </div>
+
+    <div class="mt-10">
+      <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <!-- Testimonial 1 -->
+        <div
+          class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow transition-colors duration-200 transform hover:scale-105 hover:shadow-lg glow-effect testimonial-card"
+        >
+          <div class="flex items-center mb-4">
+            <img
+              src="https://randomuser.me/api/portraits/women/12.jpg"
+              alt="Priya Sharma"
+              class="h-12 w-12 rounded-full object-cover"
+            />
+            <div class="ml-4">
+              <h4
+                class="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              >
+                Priya Sharma
+              </h4>
+              <p
+                class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+              >
+                Computer Science Student
+              </p>
+            </div>
+          </div>
+          <div class="text-yellow-400 mb-2">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+          <p
+            class="text-gray-700 dark:text-gray-200 transition-colors duration-200"
+          >
+            "SpeakSpace helped me overcome my fear of group discussions. After
+            just a month of practice, I was able to confidently participate in
+            my campus placements and secure a job offer!"
+          </p>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div
+          class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow transition-colors duration-200 transform hover:scale-105 hover:shadow-lg glow-effect testimonial-card"
+        >
+          <div class="flex items-center mb-4">
+            <img
+              src="https://randomuser.me/api/portraits/men/32.jpg"
+              alt="Rahul Patel"
+              class="h-12 w-12 rounded-full object-cover"
+            />
+            <div class="ml-4">
+              <h4
+                class="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              >
+                Rahul Patel
+              </h4>
+              <p
+                class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+              >
+                MBA Graduate
+              </p>
+            </div>
+          </div>
+          <div class="text-yellow-400 mb-2">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star-half-alt"></i>
+          </div>
+          <p
+            class="text-gray-700 dark:text-gray-200 transition-colors duration-200"
+          >
+            "The mock interview sessions were incredibly realistic. The feedback
+            I received helped me identify my weaknesses and work on them. I'm
+            now much more confident in real interviews."
+          </p>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div
+          class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow transition-colors duration-200 transform hover:scale-105 hover:shadow-lg glow-effect testimonial-card"
+        >
+          <div class="flex items-center mb-4">
+            <img
+              src="https://randomuser.me/api/portraits/women/45.jpg"
+              alt="Ananya Desai"
+              class="h-12 w-12 rounded-full object-cover"
+            />
+            <div class="ml-4">
+              <h4
+                class="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              >
+                Ananya Desai
+              </h4>
+              <p
+                class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+              >
+                Software Engineer
+              </p>
+            </div>
+          </div>
+          <div class="text-yellow-400 mb-2">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+          <p
+            class="text-gray-700 dark:text-gray-200 transition-colors duration-200"
+          >
+            "As someone who struggled with public speaking, SpeakSpace was a
+            game-changer. The platform's supportive environment allowed me to
+            practice without fear of judgment."
+          </p>
+        </div>
+
+        <!-- Testimonial 4 -->
+        <div
+          class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow transition-colors duration-200 transform hover:scale-105 hover:shadow-lg glow-effect testimonial-card"
+        >
+          <div class="flex items-center mb-4">
+            <img
+              src="https://randomuser.me/api/portraits/men/67.jpg"
+              alt="Vikram Singh"
+              class="h-12 w-12 rounded-full object-cover"
+            />
+            <div class="ml-4">
+              <h4
+                class="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              >
+                Vikram Singh
+              </h4>
+              <p
+                class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+              >
+                Product Manager
+              </p>
+            </div>
+          </div>
+          <div class="text-yellow-400 mb-2">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="far fa-star"></i>
+          </div>
+          <p
+            class="text-gray-700 dark:text-gray-200 transition-colors duration-200"
+          >
+            "The analytics feature is fantastic! Being able to track my progress
+            over time motivated me to keep practicing. I've seen significant
+            improvement in my communication skills."
+          </p>
+        </div>
+
+        <!-- Testimonial 5 -->
+        <div
+          class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow transition-colors duration-200 transform hover:scale-105 hover:shadow-lg glow-effect testimonial-card"
+        >
+          <div class="flex items-center mb-4">
+            <img
+              src="https://randomuser.me/api/portraits/women/28.jpg"
+              alt="Meera Joshi"
+              class="h-12 w-12 rounded-full object-cover"
+            />
+            <div class="ml-4">
+              <h4
+                class="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              >
+                Meera Joshi
+              </h4>
+              <p
+                class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+              >
+                HR Professional
+              </p>
+            </div>
+          </div>
+          <div class="text-yellow-400 mb-2">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+          <p
+            class="text-gray-700 dark:text-gray-200 transition-colors duration-200"
+          >
+            "As an HR professional, I recommend SpeakSpace to all job seekers.
+            The platform provides realistic practice scenarios that prepare
+            candidates for actual interviews."
+          </p>
+        </div>
+
+        <!-- Testimonial 6 -->
+        <div
+          class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow transition-colors duration-200 transform hover:scale-105 hover:shadow-lg glow-effect testimonial-card"
+        >
+          <div class="flex items-center mb-4">
+            <img
+              src="https://randomuser.me/api/portraits/men/22.jpg"
+              alt="Arjun Mehta"
+              class="h-12 w-12 rounded-full object-cover"
+            />
+            <div class="ml-4">
+              <h4
+                class="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-200"
+              >
+                Arjun Mehta
+              </h4>
+              <p
+                class="text-gray-600 dark:text-gray-300 transition-colors duration-200"
+              >
+                Engineering Student
+              </p>
+            </div>
+          </div>
+          <div class="text-yellow-400 mb-2">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star-half-alt"></i>
+          </div>
+          <p
+            class="text-gray-700 dark:text-gray-200 transition-colors duration-200"
+          >
+            "The AI-powered feedback was surprisingly accurate and helpful. It
+            pointed out speech patterns I wasn't aware of and suggested specific
+            improvements."
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- CTA Section -->
+<div class="bg-primary dark:bg-indigo-800 transition-colors duration-200">
+  <div
+    class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between"
+  >
+    <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+      <span class="block">Ready to boost your skills?</span>
+      <span class="block text-indigo-100">Start practicing today.</span>
+    </h2>
+    <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0">
+      <div class="rounded-md shadow">
+        <a
+          href="#"
+          class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 glow-effect btn-primary"
+        >
+          Sign Up Now
+        </a>
+      </div>
+      <div class="mt-3 sm:mt-0 sm:ml-3">
+        <a
+          href="#"
+          class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 glow-effect"
+        >
+          Contact Us
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark dark:bg-gray-900 transition-colors duration-200">
+  <div class="max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8">
+    <div class="mt-8 flex justify-center space-x-6">
+      <a
+        href="https://github.com/MadManav/SpeakSpace"
+        class="text-gray-400 hover:text-gray-300"
+      >
+        <span class="sr-only">GitHub</span>
+        <i class="fab fa-github fa-lg"></i>
+      </a>
+      <a href="#" class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">Instagram</span>
+        <i class="fab fa-instagram fa-lg"></i>
+      </a>
+      <a href="#" class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">Twitter</span>
+        <i class="fab fa-twitter fa-lg"></i>
+      </a>
+      <a href="#" class="text-gray-400 hover:text-gray-300">
+        <span class="sr-only">LinkedIn</span>
+        <i class="fab fa-linkedin fa-lg"></i>
+      </a>
+    </div>
+    <p class="mt-8 text-center text-base text-gray-400">
+      &copy; 2025 SpeakSpace. All rights reserved.
+    </p>
+  </div>
+</footer>
 <!-- Script for dark mode toggle and other functionality -->
 <script>
     // Dark mode toggle functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const darkModeToggle = document.getElementById('darkModeToggle');
+  document.addEventListener("DOMContentLoaded", function () {
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const navbar = document.querySelector("nav");
         
         // Initialize dark mode based on localStorage or system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const savedTheme = localStorage.getItem('theme');
-        
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-            document.documentElement.classList.add('dark');
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+      document.documentElement.classList.add("dark");
         } else {
-            document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
         }
         
         // Toggle dark mode on button click
-        darkModeToggle.addEventListener('click', function() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    darkModeToggle.addEventListener("click", function () {
+      const isDark = document.documentElement.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
         });
         
         // Feature tabs functionality
-        const featureTabs = document.querySelectorAll('.feature-tab');
-        const featureContents = document.querySelectorAll('.feature-content');
+    const featureTabs = document.querySelectorAll(".feature-tab");
+    const featureContents = document.querySelectorAll(".feature-content");
         
-        featureTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
+    featureTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
                 // Remove active class from all tabs
-                featureTabs.forEach(t => {
-                    t.classList.remove('border-primary', 'text-primary');
-                    t.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+        featureTabs.forEach((t) => {
+          t.classList.remove("border-primary", "text-primary");
+          t.classList.add(
+            "border-transparent",
+            "text-gray-500",
+            "dark:text-gray-400"
+          );
                 });
                 
                 // Add active class to clicked tab
-                tab.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-                tab.classList.add('border-primary', 'text-primary');
+        tab.classList.remove(
+          "border-transparent",
+          "text-gray-500",
+          "dark:text-gray-400"
+        );
+        tab.classList.add("border-primary", "text-primary");
                 
                 // Hide all content sections
-                featureContents.forEach(content => {
-                    content.classList.add('hidden');
+        featureContents.forEach((content) => {
+          content.classList.add("hidden");
                 });
                 
                 // Show the corresponding content section
-                const tabId = tab.getAttribute('data-tab');
-                document.getElementById(tabId).classList.remove('hidden');
+        const tabId = tab.getAttribute("data-tab");
+        document.getElementById(tabId).classList.remove("hidden");
             });
         });
         
-        // Smooth scrolling for navbar links
-        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
+    // Improved smooth scrolling for navbar links - works with both scroll-link class and nav links with # hrefs
+    const smoothScrollLinks = document.querySelectorAll(
+      '.scroll-link, nav a[href^="#"]'
+    );
+
+    smoothScrollLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
                 e.preventDefault();
                 
-                const targetId = this.getAttribute('href');
+        const targetId = this.getAttribute("href");
                 // Check if targetId is just '#' and skip if it is
-                if (targetId === '#') return;
+        if (targetId === "#") return;
                 
                 const targetElement = document.querySelector(targetId);
                 
                 if (targetElement) {
+          // Get the height of the navbar for offset
+          const navbarHeight = navbar ? navbar.offsetHeight : 80;
+
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition =
+            elementPosition + window.pageYOffset - navbarHeight;
+
                     window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
+            top: offsetPosition,
+            behavior: "smooth",
                     });
                 }
             });
+    });
+
+    // Make the logo button scroll to top
+    const logoButton = document.getElementById("logoButton");
+    if (logoButton) {
+      logoButton.addEventListener("click", function () {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
         });
+      });
+    }
+
+    // Scroll animation functionality
+    const scrollAnimateElements = document.querySelectorAll(".scroll-animate");
+
+    const scrollObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+            scrollObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px",
+      }
+    );
+
+    scrollAnimateElements.forEach((element) => {
+      scrollObserver.observe(element);
+    });
+
+    // Initialize scroll animations for existing elements
+    function initScrollAnimations() {
+      // Features section
+      document
+        .querySelectorAll(
+          "#features .lg\\:text-center, #features .mt-10, #features .mt-8"
+        )
+        .forEach((el, index) => {
+          el.classList.add("scroll-animate", "slide-up-element");
+          el.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+      // How It Works section
+      document
+        .querySelectorAll("#how-it-works .lg\\:text-center")
+        .forEach((el) => el.classList.add("scroll-animate", "fade-in-element"));
+
+      document
+        .querySelectorAll("#how-it-works .flex.flex-col.rounded-lg")
+        .forEach((el, index) => {
+          el.classList.add("scroll-animate", "slide-up-element");
+          el.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+      // Testimonials section
+      document
+        .querySelectorAll("#testimonials .lg\\:text-center")
+        .forEach((el) => el.classList.add("scroll-animate", "fade-in-element"));
+
+      document
+        .querySelectorAll("#testimonials .bg-gray-50.dark\\:bg-gray-700")
+        .forEach((el, index) => {
+          el.classList.add("scroll-animate", "scale-element");
+          el.style.transitionDelay = `${index * 0.1}s`;
+        });
+
+      // CTA section
+      const ctaSection = document.querySelector(
+        ".bg-primary.dark\\:bg-indigo-800 .max-w-7xl"
+      );
+      if (ctaSection) {
+        ctaSection.classList.add("scroll-animate", "slide-right-element");
+      }
+
+      // Footer
+      const footer = document.querySelector("footer .max-w-7xl");
+      if (footer) {
+        footer.classList.add("scroll-animate", "fade-in-element");
+      }
+
+      // Re-observe all elements
+      document.querySelectorAll(".scroll-animate").forEach((element) => {
+        scrollObserver.observe(element);
+      });
+    }
+
+    // Initialize animations
+    initScrollAnimations();
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Smooth scrolling for navigation links
+    document.querySelectorAll(".scroll-link").forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute("href");
+        const targetSection = document.querySelector(targetId);
+
+        if (targetSection) {
+          const headerOffset = 80; // Adjust based on your header height
+          const elementPosition = targetSection.getBoundingClientRect().top;
+          const offsetPosition =
+            elementPosition + window.pageYOffset - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
+
+          // Close mobile menu if it's open
+          document.getElementById("mobileMenu").classList.add("hidden");
+          document.getElementById("menuOpenIcon").classList.remove("hidden");
+          document.getElementById("menuCloseIcon").classList.add("hidden");
+        }
+      });
+    });
+
+    // Also make the logo button scroll to top
+    document
+      .getElementById("logoButton")
+      .addEventListener("click", function () {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      });
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const menuOpenIcon = document.getElementById("menuOpenIcon");
+    const menuCloseIcon = document.getElementById("menuCloseIcon");
+
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener("click", function () {
+        mobileMenu.classList.toggle("hidden");
+        menuOpenIcon.classList.toggle("hidden");
+        menuCloseIcon.classList.toggle("hidden");
+      });
+    }
+
+    // Make mobile dark mode toggle work the same as desktop toggle
+    const mobileDarkModeToggle = document.getElementById(
+      "mobileDarkModeToggle"
+    );
+    if (mobileDarkModeToggle) {
+      mobileDarkModeToggle.addEventListener("click", function () {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      });
+    }
     });
 </script>
 {% endblock %}
-

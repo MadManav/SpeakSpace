@@ -1,43 +1,76 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Update all meeting links and countdowns
-    function updateMeetingLinks() {
-        const meetingLinks = document.querySelectorAll('[id^="meeting-link-"]');
+    // Get all meeting links
+    const meetingLinks = document.querySelectorAll('[id^="meeting-link-"]');
+    
+    // Initialize each link
+    meetingLinks.forEach(link => {
+        const startTimeStr = link.getAttribute('data-start-time');
+        const startTime = new Date(startTimeStr);
+        const sessionId = link.getAttribute('data-session-id');
+        const countdownElement = document.getElementById(`countdown-${sessionId}`);
         
-        meetingLinks.forEach(link => {
-            const sessionId = link.id.split('-').pop();
-            const startTime = new Date(link.dataset.startTime);
-            const now = new Date();
-            const countdown = document.getElementById(`countdown-${sessionId}`);
+        // Check if start time is in the future
+        const currentTime = new Date();
+        if (startTime > currentTime) {
+            // Disable link
+            link.setAttribute('disabled', 'disabled');
+            link.style.pointerEvents = 'none';
+            link.classList.add('opacity-50', 'cursor-not-allowed');
             
-            if (now < startTime) {
-                // Meeting hasn't started yet
-                link.classList.add('pointer-events-none', 'opacity-50');
-                
-                // Update countdown
-                if (countdown) {
-                    const diff = startTime - now;
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    
-                    let countdownText = '(Starts in: ';
-                    if (days > 0) countdownText += `${days}d `;
-                    if (hours > 0) countdownText += `${hours}h `;
-                    countdownText += `${minutes}m)`;
-                    
-                    countdown.textContent = countdownText;
-                }
-            } else {
-                // Meeting has started
-                link.classList.remove('pointer-events-none', 'opacity-50');
-                if (countdown) {
-                    countdown.textContent = '(Meeting is live)';
-                }
+            // Start countdown
+            updateCountdown(countdownElement, startTime);
+            
+            // Set timeout to enable link at start time
+            const timeUntilStart = startTime - currentTime;
+            setTimeout(() => {
+                enableMeetingLink(link, countdownElement);
+            }, timeUntilStart);
+        } else {
+            // Meeting time has already started
+            enableMeetingLink(link, countdownElement);
+        }
+    });
+    
+    // Function to update countdown
+    function updateCountdown(element, targetTime) {
+        if (!element) return;
+        
+        const interval = setInterval(() => {
+            const now = new Date();
+            const diff = targetTime - now;
+            
+            if (diff <= 0) {
+                clearInterval(interval);
+                element.textContent = '(Meeting started)';
+                return;
             }
-        });
+            
+            // Calculate hours, minutes, seconds
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // Format countdown string
+            let countdownStr = '(Starts in: ';
+            if (hours > 0) countdownStr += `${hours}h `;
+            countdownStr += `${minutes}m ${seconds}s)`;
+            
+            element.textContent = countdownStr;
+        }, 1000);
     }
-
-    // Update every minute
-    updateMeetingLinks();
-    setInterval(updateMeetingLinks, 60000);
+    
+    // Function to enable meeting link
+    function enableMeetingLink(link, countdownElement) {
+        if (!link) return;
+        
+        // Enable link
+        link.removeAttribute('disabled');
+        link.style.pointerEvents = 'auto';
+        link.classList.remove('opacity-50', 'cursor-not-allowed');
+        
+        // Update countdown text
+        if (countdownElement) {
+            countdownElement.textContent = '(Active now)';
+        }
+    }
 });
